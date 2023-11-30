@@ -3,3 +3,10 @@
 *~
 .directory
 .DS_Store
+
+# gradle-specific
+.gradle
+build
+gradle/
+gradlew*
+.gitattributes
