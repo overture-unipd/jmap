@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  server:
+    image: overture-unipd/jmap:latest
+    restart: unless-stopped
+    ports:
+      - 8080:4567
+
+  storage:
+    image: rethinkdb:2.4.2-bullseye-slim
+    restart: unless-stopped
+    volumes:
+      - rethinkdb:/data
+
+volumes:
+  rethinkdb:

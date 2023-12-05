@@ -8,6 +8,19 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+
+    id("com.bmuschko.docker-java-application") version "9.4.0"
+}
+
+docker {
+    javaApplication {
+        baseImage.set("openjdk:21-jdk-slim")
+        maintainer.set("Overture 'overture.unipd@gmail.com'")
+        ports.set(listOf(4567, 8080))
+        images.set(setOf("overture-unipd/jmap:latest"))
+        mainClassName.set("it.unipd.overture.jmap.App")
+        // jvmArgs.set(listOf("-Xms256m", "-Xmx2048m"))
+    }
 }
 
 repositories {
@@ -23,6 +36,8 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:32.1.1-jre")
+    implementation("com.rethinkdb:rethinkdb-driver:2.4.4")
+    implementation("com.sparkjava:spark-core:2.9.4")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
