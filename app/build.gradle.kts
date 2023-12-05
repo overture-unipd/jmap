@@ -8,6 +8,14 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+
+    id("com.diffplug.spotless") version "6.23.3"
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
 }
 
 repositories {
