@@ -9,8 +9,15 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
 
+    id("com.diffplug.spotless") version "6.23.3"
     id("com.bmuschko.docker-java-application") version "9.4.0"
     id("com.dorongold.task-tree") version "2.1.1"
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
 }
 
 docker {
