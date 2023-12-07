@@ -10,7 +10,8 @@ indent_style = space
 indent_size = 2
 
 [*.java]
-indent_style = tab
+indent_style = space
+indent_size = 2
 
 [*.kts]
 indent_style = space
