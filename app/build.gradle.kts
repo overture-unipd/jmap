@@ -11,6 +11,7 @@ plugins {
 
     id("com.diffplug.spotless") version "6.23.3"
     id("com.bmuschko.docker-java-application") version "9.4.0"
+    id("com.dorongold.task-tree") version "2.1.1"
 }
 
 spotless {
@@ -43,8 +44,20 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:32.1.1-jre")
-    implementation("com.rethinkdb:rethinkdb-driver:2.4.4")
+
     implementation("com.sparkjava:spark-core:2.9.4")
+    implementation("org.slf4j:slf4j-simple:1.7.21")
+
+    implementation("org.springframework.security:spring-security-crypto:6.2.0")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.77")
+
+    implementation("com.rethinkdb:rethinkdb-driver:2.4.4")
+    implementation("commons-logging:commons-logging:1.3.0")
+
+    implementation("rs.ltt.jmap:jmap-common:0.8.15")
+    implementation("rs.ltt.jmap:jmap-gson:0.8.15")
+    implementation("com.google.code.gson:gson:2.10.1")
+    // implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

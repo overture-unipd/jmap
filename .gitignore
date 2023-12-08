@@ -1,12 +1,13 @@
-.idea
-.vscode
+.idea/
+.vscode/
 *~
 .directory
 .DS_Store
 
 # gradle-specific
-.gradle
-build
+.gradle/
+build/
+bin/
 gradle/
 gradlew*
 .gitattributes
