@@ -9,24 +9,24 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
 
-    id("com.diffplug.spotless") version "6.23.3"
+    // id("com.diffplug.spotless") version "6.23.3"
     id("com.bmuschko.docker-java-application") version "9.4.0"
     id("com.dorongold.task-tree") version "2.1.1"
 }
 
-spotless {
-    java {
-        googleJavaFormat()
-    }
-}
+// spotless {
+//     java {
+//         googleJavaFormat()
+//     }
+// }
 
 docker {
     javaApplication {
         baseImage.set("openjdk:21-jdk-slim")
         maintainer.set("Overture 'overture.unipd@gmail.com'")
-        ports.set(listOf(4567, 8080))
+        ports.set(listOf(8000))
         images.set(setOf("overture-unipd/jmap:latest"))
-        mainClassName.set("it.unipd.overture.jmap.App")
+        mainClassName.set("it.unipd.overture.jmap.Ignite")
         // jvmArgs.set(listOf("-Xms256m", "-Xmx2048m"))
     }
 }
@@ -69,7 +69,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass.set("it.unipd.overture.jmap.App")
+    mainClass.set("it.unipd.overture.jmap.Ignite")
 }
 
 tasks.named<Test>("test") {

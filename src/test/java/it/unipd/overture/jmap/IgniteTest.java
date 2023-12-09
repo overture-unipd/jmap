@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class AppTest {
+class IgniteTest {
   @Test
   void appHasAGreeting() {
-    App classUnderTest = new App();
+    Ignite classUnderTest = new Ignite();
     assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
   }
 }

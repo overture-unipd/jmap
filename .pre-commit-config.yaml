@@ -10,4 +10,3 @@ repos:
     rev: v0.3.0
     hooks:
     - id: gradle-build
-    - id: gradle-spotless

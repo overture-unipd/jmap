@@ -2,12 +2,14 @@ package it.unipd.overture.jmap;
 
 import static spark.Spark.*;
 
-public class App {
+public class Ignite {
   public String getGreeting() {
     return "Hello World!";
   }
 
   public static void main(String[] args) {
+    port(8000);
+
     get("/jmap", (q, a) -> {
       q.session(true);
       String account = q.session().attribute("account");
