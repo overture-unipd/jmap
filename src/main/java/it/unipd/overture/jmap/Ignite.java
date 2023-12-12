@@ -1,14 +1,34 @@
 package it.unipd.overture.jmap;
 
 import static spark.Spark.*;
+import spark.Request;
+import spark.Response;
 
-public class Ignite {
+public class IgniteTest {
+  private Database database = new Database();
+
   public String getGreeting() {
     return "Hello World!";
   }
 
+  public String getMail(Request q, Response a) {
+    a.type("application/json");
+    return database.getMail(q.headers("Authorization"), q.queryParams("id"));
+  }
+
+  public String login(Request q, Response a) {
+    String username = q.queryParams("username");
+    String password = q.queryParams("password");
+    String bearer = database.login(username, password);
+    if (bearer != null && q.session() != null) {
+      q.session().attribute("bearer", bearer);
+    }
+    a.redirect("/");
+    return "";
+  }
+
   public static void main(String[] args) {
-    port(8000);
+    Ignite app = new Ignite();
 
     get("/jmap", (q, a) -> {
       q.session(true);
@@ -21,24 +41,22 @@ public class Ignite {
       return "{\"capabilities\": { \"urn:ietf:params:jmap:core\": {}, \"urn:ietf:params:jmap:submission\": {}, \"urn:ietf:params:jmap:mail\": {}, }, \"accounts\": {\"" + account + "\": {} } }";
     });
 
-    post("/jmap", (q, a) -> {
-      return "";
-    });
+    post("/jmap", (q, a) -> "");
 
     post("/insertMail", (q, a) -> {
       new Database().insertMail(q.body());
       return "";
     });
 
-    get("/getMail", (q, a) -> {
-      a.type("application/json");
-      return new Database().getMail(q.headers("Authorization"), q.queryParams("id"));
-    });
+    get(
+        "/getMail", app::getMail);
 
-    get("/getAll", (q, a) -> {
-      a.type("application/json");
-      return new Database().getAccountMails(q.headers("Authorization"));
-    });
+    get(
+        "/getAll",
+        (q, a) -> {
+          a.type("application/json");
+          return new Database().getAccountMails(q.headers("Authorization"));
+        });
 
     get("/", (q, a) -> {
       q.session(true);
@@ -56,21 +74,14 @@ public class Ignite {
           </form>
         </body>
         </html>""";
-      } else {
-        return "<html> <body> <p>Your bearer is: " + bearer + "</p> <p> <a href=\"/logout\">Logout</a> </p> <p> <a href=\"/reset\">Reset</a> </p> </body> </html>";
-      } 
+          } else {
+            return "<html> <body> <p>Your bearer is: "
+                + bearer
+                + "</p> <p> <a href=\"/logout\">Logout</a> </p> <p> <a href=\"/reset\">Reset</a> </p> </body> </html>";
+          }
     });
 
-    post("/login", (q, a) -> {
-      String username = q.queryParams("username");
-      String password = q.queryParams("password");
-      String bearer = new Database().login(username, password);
-      if (bearer != null) {
-        q.session().attribute("bearer", bearer);
-      }
-      a.redirect("/");
-      return "";
-    });
+    post("/login", app::login);
 
     get("/logout", (q, a) -> {
       q.session(true);
@@ -80,13 +91,14 @@ public class Ignite {
     });
 
     get("/reset", (q, a) -> {
-      q.session(true);
-      if (q.session().attribute("bearer") != new Database().getAdminBearer()) {
-        halt(401, "Login as admin!");
-      }
+      // q.session(true);
+      // if (q.session().attribute("bearer") != new Database().getAdminBearer()) {
+      //   halt(401, "Login as admin!");
+      // }
       new Database().reset();
       a.redirect("/logout");
       return "Done.";
     });
   }
 }
+

@@ -15,69 +15,98 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Database {
-    RethinkDB r;
-    Argon2PasswordEncoder encoder;
+  RethinkDB r;
+  Connection conn;
+  Argon2PasswordEncoder encoder;
 
-    Database() {
-        this.r = RethinkDB.r;
-        this.encoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+  Database() {
+    this.r = RethinkDB.r;
+    this.encoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+    this.conn = r.connection().hostname("localhost").port(28015).connect().use("jmap");
+  }
+
+  public void reset() {
+    try {
+      r.dbDrop("jmap").run(conn);
+    } catch (ReqlRuntimeError e) {
     }
 
-    public Connection connect() {
-        return r.connection().hostname("storage").port(28015).connect().use("jmap");
+    r.dbCreate("jmap").run(conn);
+
+    r.tableCreate("account").optArg("primary_key", "address").run(conn);
+    r.table("account").indexCreate("id").run(conn);
+    r.table("account")
+        .insert(
+            r.array(
+                r.hashMap("address", "admin@localhost")
+                    .with("password", this.encoder.encode("admin"))
+                    .with("id", UUID.randomUUID().toString()),
+                r.hashMap("address", "alice@localhost")
+                    .with("password", this.encoder.encode("alice"))
+                    .with("id", UUID.randomUUID().toString()),
+                r.hashMap("address", "bob@localhost")
+                    .with("password", this.encoder.encode("bob"))
+                    .with("id", UUID.randomUUID().toString()),
+                r.hashMap("address", "user@localhost")
+                    .with("password", this.encoder.encode("user"))
+                    .with("id", "df3226b7-98cf-4fec-926c-427c41fdc95a")))
+        .run(conn);
+
+    r.tableCreate("bearer").run(conn);
+    r.table("bearer").indexCreate("account_id").run(conn);
+
+    r.tableCreate("mail").run(conn);
+    r.table("mail").indexCreate("account_id").run(conn);
+    r.table("mail")
+        .insert(
+            r.array(
+                r.hashMap("account_id", "df3226b7-98cf-4fec-926c-427c41fdc95a")
+                    .with("id", "mockedMailId_1")
+                    .with("subject", "Mail Subject 1")
+                    .with("body", "Mail Body 1"),
+                r.hashMap("account_id", "df3226b7-98cf-4fec-926c-427c41fdc95a")
+                    .with("id", "mockedMailId_2")
+                    .with("subject", "Mail Subject 2")
+                    .with("body", "Mail Body 2")
+            )
+        )
+        .run(conn);
+  }
+
+  public String login(String address, String password) {
+    Connection conn = this.conn;
+    if (this.encoder.matches(
+        password, r.table("account").get(address).g("password").run(conn).first().toString())) {
+      return r.table("account").get(address).g("id").run(conn).first().toString();
     }
+    return null;
+  }
 
-    public void reset() {
-        Connection conn = this.connect();
+  public void insertMail(String jsonRepr) {
+    Connection conn = this.conn;
+    r.table("mail").insert(new Gson().fromJson(jsonRepr, Email.class)).run(conn);
+  }
 
-        try {
-            r.dbDrop("jmap").run(conn);
-        } catch (ReqlRuntimeError e) {}
+  public String getMail(String bearer, String mailid) {
+    Connection conn = this.conn;
+    Object result = r.table("mail")
+        .filter(r.hashMap("id", mailid).with("account_id", bearer))
+        .run(conn)
+        .first();
 
-        r.dbCreate("jmap").run(conn);
-
-        r.tableCreate("account").optArg("primary_key", "address").run(conn);
-        r.table("account").indexCreate("id").run(conn);
-        r.table("account").insert(r.array(
-            r.hashMap("address", "admin@localhost").with("password", this.encoder.encode("admin")).with("id", UUID.randomUUID().toString()),
-            r.hashMap("address", "alice@localhost").with("password", this.encoder.encode("alice")).with("id", UUID.randomUUID().toString()),
-            r.hashMap("address", "bob@localhost").with("password", this.encoder.encode("bob")).with("id", UUID.randomUUID().toString())
-        )).run(conn);
-
-        r.tableCreate("bearer").run(conn);
-        r.table("bearer").indexCreate("account_id").run(conn);
-
-        r.tableCreate("mail").run(conn);
-        r.table("mail").indexCreate("account_id").run(conn);
+    if (result != null) {
+        return result.toString();
     }
+    return "";
+  }
 
-    public String login(String address, String password) {
-        Connection conn = this.connect();
-        if (this.encoder.matches(password, r.table("account").get(address).g("password").run(conn).first().toString())) {
-            return r.table("account").get(address).g("id").run(conn).first().toString();
-        }
-        return null;
-    }
+  public String getAccountMails(String bearer) {
+    Connection conn = this.conn;
+    return r.table("mail").getAll(bearer).optArg("index", "account_id").run(conn).toString();
+  }
 
-    public void insertMail(String jsonRepr) {
-        Connection conn = this.connect();
-        r.table("mail").insert(
-            new Gson().fromJson(jsonRepr, Email.class)
-        ).run(conn);
-    }
-
-    public String getMail(String bearer, String mailid) {
-        Connection conn = this.connect();
-        return r.table("mail").get(mailid).filter(r.hashMap("account_id", bearer)).run(conn).first().toString();
-    }
-
-    public String getAccountMails(String bearer) {
-        Connection conn = this.connect();
-        return r.table("mail").getAll(bearer).optArg("index", "account_id").run(conn).toString();
-    }
-
-    public String getAdminBearer() {
-        Connection conn = this.connect();
-        return r.table("account").get("admin@localhost").g("id").run(conn).first().toString();
-    }
+  public String getAdminBearer() {
+    Connection conn = this.conn;
+    return r.table("account").get("admin@localhost").g("id").run(conn).first().toString();
+  }
 }
