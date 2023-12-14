@@ -48,15 +48,12 @@ public class IgniteTest {
       return "";
     });
 
-    get(
-        "/getMail", app::getMail);
+    get("/getMail", app::getMail);
 
-    get(
-        "/getAll",
-        (q, a) -> {
-          a.type("application/json");
-          return new Database().getAccountMails(q.headers("Authorization"));
-        });
+    get("/getAll", (q, a) -> {
+      a.type("application/json");
+      return new Database().getAccountMails(q.headers("Authorization"));
+    });
 
     get("/", (q, a) -> {
       q.session(true);
@@ -82,6 +79,8 @@ public class IgniteTest {
     });
 
     post("/login", app::login);
+
+    post("/mta", (q, a) -> "TODO");
 
     get("/logout", (q, a) -> {
       q.session(true);

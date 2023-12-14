@@ -9,6 +9,14 @@ services:
     env_file:
       - ./env/over
 
+  ture:
+    image: overture-unipd/jmap:latest
+    restart: unless-stopped
+    ports:
+      - 8001:8000
+    env_file:
+      - ./env/ture
+
   database:
     image: rethinkdb:2.4.2-bullseye-slim
     restart: unless-stopped
