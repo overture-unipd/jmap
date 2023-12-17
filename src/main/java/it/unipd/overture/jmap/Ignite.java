@@ -21,6 +21,8 @@ public class Ignite {
     post("/api/jmap", dispatcher::jmap);
     post("/api/download", (q, a) -> "TODO");
     post("/api/upload", (q, a) -> "TODO");
+    post("/api/upload", dispatcher::upload);
+    get("/api/download", dispatcher::download);
 
     post("/mta", (q, a) -> "TODO");
 

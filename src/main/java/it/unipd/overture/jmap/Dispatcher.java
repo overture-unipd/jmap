@@ -25,11 +25,13 @@ import spark.Response;
 public class Dispatcher {
   GsonBuilder gsonBuilder;
   Gson GSON;
+  Map<String, byte[]> attachments; // TODO: replace with rethinkdb blobs or native files
 
   Dispatcher() {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
     GSON = gsonBuilder.create();
+    attachments = new HashMap<>();
   }
 
   private String[] extractAuth(Request q) { // TODO: use a class istead of array
@@ -47,6 +49,31 @@ public class Dispatcher {
 
   private String getAccountState(String id) {
     return new Database().getAccountState(id);
+  }
+
+  public String upload(Request q, Response a) {
+    a.type("application/json");
+    String contentType = q.headers("Content-Type");
+    long size = q.contentLength();
+    byte[] blob = q.bodyAsBytes();
+    String blobId = Hashing.sha256().hashBytes(blob).toString();
+    final String username = extractAuth(q)[0];
+    final String accountid = getAccountId(username);
+    attachments.put(blobId, blob);
+    final Upload upload =
+      Upload.builder()
+        .size(size)
+        .accountId(accountid)
+        .blobId(blobId)
+        .type(contentType)
+        .build();
+    return GSON.toJson(upload);
+  }
+
+  public String download(Request q, Response a) {
+    var blobid = q.queryParams("blobid");
+    a.body(new String(attachments.get(blobid)));
+    return "";
   }
 
   public void authenticate(Request q, Response a) {
@@ -103,7 +130,6 @@ public class Dispatcher {
   }
 
   public String jmap(Request q, Response a) {
-    // TODO
     a.type("application/json");
     var t = new Gson().fromJson(q.body(), Properties[].class);
     for (Properties o : t) {
