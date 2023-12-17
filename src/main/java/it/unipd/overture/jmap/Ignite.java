@@ -19,8 +19,6 @@ public class Ignite {
     before("/api/*", dispatcher::authenticate);
     get("/api/jmap", dispatcher::session);
     post("/api/jmap", dispatcher::jmap);
-    post("/api/download", (q, a) -> "TODO");
-    post("/api/upload", (q, a) -> "TODO");
     post("/api/upload", dispatcher::upload);
     get("/api/download", dispatcher::download);
 
@@ -29,4 +27,3 @@ public class Ignite {
     get("/reset", dispatcher::reset);
   }
 }
-
