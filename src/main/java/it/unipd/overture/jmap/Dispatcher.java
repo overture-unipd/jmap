@@ -24,17 +24,17 @@ import spark.Response;
 
 public class Dispatcher {
   GsonBuilder gsonBuilder;
-  Gson GSON;
+  Gson gson;
   Map<String, byte[]> attachments; // TODO: replace with rethinkdb blobs or native files
 
   Dispatcher() {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
-    GSON = gsonBuilder.create();
+    gson = gsonBuilder.create();
     attachments = new HashMap<>();
   }
 
-  private String[] extractAuth(Request q) { // TODO: use a class istead of array
+  private String[] extractAuth(Request q) {
     if (q.headers("Authorization") == null) {
       return null;
     }
@@ -43,12 +43,24 @@ public class Dispatcher {
     return decoded.split(":");
   }
 
+  public void authenticate(Request q, Response a) {
+    String[] t = extractAuth(q);
+    if (t == null) {
+      halt(401, "Requests have to be authenticated.");
+    }
+    var username = t[0];
+    var password = t[1];
+    if (! new Database().getAccountPassword(getAccountId(username)).equals(password)) {
+      halt(401, "Wrong credentials.");
+    };
+  }
+
   private String getAccountId(String address) {
     return new Database().getAccountId(address);
   }
 
-  private String getAccountState(String id) {
-    return new Database().getAccountState(id);
+  private String getAccountState(String accountid) {
+    return new Database().getAccountState(accountid);
   }
 
   public String upload(Request q, Response a) {
@@ -67,25 +79,13 @@ public class Dispatcher {
         .blobId(blobId)
         .type(contentType)
         .build();
-    return GSON.toJson(upload);
+    return gson.toJson(upload);
   }
 
   public String download(Request q, Response a) {
     var blobid = q.queryParams("blobid");
     a.body(new String(attachments.get(blobid)));
     return "";
-  }
-
-  public void authenticate(Request q, Response a) {
-    String[] t = extractAuth(q);
-    if (t == null) {
-      halt(401, "Requests need to be authenticated.");
-    }
-    var username = t[0];
-    var password = t[1];
-    if (! new Database().getAccountPassword(getAccountId(username)).equals(password)) {
-      halt(401, "Wrong credentials.");
-    };
   }
 
   public String session(Request q, Response a) {
@@ -126,7 +126,7 @@ public class Dispatcher {
             .primaryAccounts(ImmutableMap.of(MailAccountCapability.class, accountid))
             .build();
 
-    return GSON.toJson(sessionResource);
+    return gson.toJson(sessionResource);
   }
 
   public String jmap(Request q, Response a) {

@@ -1,7 +1,7 @@
 package it.unipd.overture.jmap;
 
 import java.util.Properties;
-import java.util.UUID;
+// import java.util.UUID;
 
 import com.google.gson.Gson;
 import com.rethinkdb.RethinkDB;
@@ -33,7 +33,7 @@ public class Database {
     r.table("account").indexCreate("address").run(conn);
     for (var acc : conf.getAccounts()) {
       r.table("account").insert(
-        r.hashMap("address", acc.getAddress()+"@"+conf.getDomain()).with("password", acc.getPassword()).with("state", UUID.randomUUID().toString())
+        r.hashMap("address", acc.getAddress()+"@"+conf.getDomain()).with("password", acc.getPassword()).with("state", r.uuid())
       ).run(conn);
     }
 
@@ -52,8 +52,13 @@ public class Database {
     r.table("account").get(accountid).update(r.hashMap("state", state)).run(conn);
   }
 
+  public void getMail(String mailid) {
+    System.out.println(r.table("mail").get(mailid).toJson().run(conn));
+  }
+
   public void insertMail(String accountid, Object obj) {
-    r.table("mail").insert(obj).run(conn);
+    var t = r.table("mail").insert(obj).run(conn);
+    System.out.println(t);
   }
 
   public String get(String table, String id) {
@@ -74,6 +79,5 @@ public class Database {
 
   public String getAccountMails(String accountid) {
     return r.table("account").getAll(accountid).run(conn).toString(); // get all emails
-    // join with mails table
   }
 }

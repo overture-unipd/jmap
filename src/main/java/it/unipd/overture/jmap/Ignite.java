@@ -21,8 +21,8 @@ public class Ignite {
     post("/api/jmap", dispatcher::jmap);
     post("/api/upload", dispatcher::upload);
     get("/api/download", dispatcher::download);
+    get("/download", dispatcher::download); // unauthenticated, for testing purposes
 
-    post("/mta", (q, a) -> "TODO");
 
     get("/reset", dispatcher::reset);
   }
