@@ -131,11 +131,7 @@ public class Dispatcher {
 
   public String jmap(Request q, Response a) {
     a.type("application/json");
-    var t = new Gson().fromJson(q.body(), Properties[].class);
-    for (Properties o : t) {
-      o.getProperty("id");
-    }
-    return "";
+    return new Jmap(getAccountId(extractAuth(q)[0]), q.body()).dispatch();
   }
 
   public String reset(Request q, Response a) {
