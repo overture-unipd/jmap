@@ -61,8 +61,19 @@ public class Database {
     System.out.println(t);
   }
 
-  public String get(String table, String id) {
-    return r.table(table).get(id).run(conn).first().toString();
+  public void insertFile(String userid, byte[] content) {
+    var t = r.table("files").insert(
+      r.hashMap("file", r.binary(content))
+    ).run(conn);
+    System.out.println(t);
+  }
+
+  public byte[] getFile(String fileid) {
+    var cursor = r.table("file").get(fileid).pluck("content").coerceTo("binary").run(conn);
+    for (Object o : cursor) {
+      System.out.println(o);
+    }
+    return new byte[0];
   }
 
   public String getAccountId(String address) {

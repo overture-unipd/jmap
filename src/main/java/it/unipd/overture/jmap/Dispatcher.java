@@ -2,13 +2,20 @@ package it.unipd.overture.jmap;
 
 import static spark.Spark.halt;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.ServletOutputStream;
+
+import okio.Buffer;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
+import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -21,17 +28,16 @@ import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
 import rs.ltt.jmap.gson.JmapAdapters;
 import spark.Request;
 import spark.Response;
+import spark.utils.IOUtils;
 
 public class Dispatcher {
   GsonBuilder gsonBuilder;
   Gson gson;
-  Map<String, byte[]> attachments; // TODO: replace with rethinkdb blobs or native files
 
   Dispatcher() {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
     gson = gsonBuilder.create();
-    attachments = new HashMap<>();
   }
 
   private String[] extractAuth(Request q) {
@@ -69,9 +75,10 @@ public class Dispatcher {
     long size = q.contentLength();
     byte[] blob = q.bodyAsBytes();
     String blobId = Hashing.sha256().hashBytes(blob).toString();
+    var db = new Database();
+    db.insertFile(blobId, blob);
     final String username = extractAuth(q)[0];
     final String accountid = getAccountId(username);
-    attachments.put(blobId, blob);
     final Upload upload =
       Upload.builder()
         .size(size)
@@ -82,10 +89,25 @@ public class Dispatcher {
     return gson.toJson(upload);
   }
 
-  public String download(Request q, Response a) {
-    var blobid = q.queryParams("blobid");
-    a.body(new String(attachments.get(blobid)));
-    return "";
+  public Object download(Request q, Response a) {
+    var blobId = q.queryParams("blobid");
+    var file = new Database().getFile(blobId);
+
+    a.header("Content-Disposition", String.format("attachment; filename=\"%s.raw\"", blobId)); // TODO use filename associated, instead of blobid
+    a.type(MediaType.OCTET_STREAM.toString()); // "application/octet-stream"
+    a.raw().setContentLength(file.length);
+
+    try {
+      var is = new ByteArrayInputStream(file);
+      var os = a.raw().getOutputStream();
+      IOUtils.copy(is, os);
+      is.close();
+      os.close();
+    } catch (IOException e) {
+      halt(500, "Something is wrong with the download.");
+    }
+
+    return null;
   }
 
   public String session(Request q, Response a) {
@@ -95,8 +117,8 @@ public class Dispatcher {
     capabilityBuilder.put(
         CoreCapability.class,
         CoreCapability.builder()
-            .maxSizeUpload(1024 * 1024L) // 1MiB
-            .maxObjectsInGet(1L) // TODO: raise
+            .maxSizeUpload(100 * 1024 * 1024L) // 100MB
+            .maxObjectsInGet(1L)
             .maxCallsInRequest(1L)
             .maxObjectsInSet(1L)
             .maxConcurrentUpload(1L)
@@ -117,8 +139,7 @@ public class Dispatcher {
                     ImmutableMap.of(
                         MailAccountCapability.class,
                         MailAccountCapability.builder()
-                            .maxSizeAttachmentsPerEmail(
-                                50 * 1024 * 1024L) // 50MiB
+                            .maxSizeAttachmentsPerEmail(50 * 1024 * 1024L) // 50MiB
                             .build()))
                   .name(username)
                   .build())
