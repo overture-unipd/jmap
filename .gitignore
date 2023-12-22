@@ -4,7 +4,7 @@
 .directory
 .DS_Store
 
-# gradle-specific
+# gradle files
 .gradle/
 build/
 bin/

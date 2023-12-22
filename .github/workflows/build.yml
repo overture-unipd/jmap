@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
@@ -14,9 +17,9 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         distribution: temurin
-        java-version: 17
+        java-version: 21
     - uses: gradle/gradle-build-action@v2
       id: setup-gradle
       with:
-        gradle-version: release-candidate
+        gradle-version: 8.4
     - run: gradle build
