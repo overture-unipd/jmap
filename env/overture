@@ -1,0 +1,3 @@
+DOMAIN=overture
+DATABASE=database
+ACCOUNTS=alice:a,bob:b,carol:c
