@@ -65,7 +65,7 @@ public class Database {
     System.out.println(t);
   }
 
-  public String insertFile(String userid, byte[] content) {
+  public String insertFile(byte[] content) {
     var id = r.table("file").insert(
       r.hashMap("content", content)
     ).toJson().run(conn);
