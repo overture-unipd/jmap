@@ -1,6 +1,7 @@
 package it.unipd.overture.jmap;
 
 import java.util.Base64;
+import java.util.LinkedList;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -17,11 +18,13 @@ import rs.ltt.jmap.gson.JmapAdapters;
 public class Dispatcher {
   GsonBuilder gsonBuilder;
   Gson gson;
+  Database db;
 
-  Dispatcher() {
+  Dispatcher(Database db) {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
     gson = gsonBuilder.create();
+    this.db = db;
   }
 
   public String[] extractAuth(String auth) {
@@ -31,24 +34,23 @@ public class Dispatcher {
   }
 
   public boolean authenticate(String address, String password) {
-    return new Database().getAccountPassword(getAccountId(address)).equals(password);
+    return db.getAccountPassword(getAccountId(address)).equals(password);
   }
 
   private String getAccountId(String address) {
-    return new Database().getAccountId(address);
+    return db.getAccountId(address);
   }
 
   private String getAccountState(String accountid) {
-    return new Database().getAccountState(accountid);
+    return db.getAccountState(accountid);
   }
 
-  public String upload(String address, String type, long size, byte[] blob) {
-    var blobid = new Database().insertFile(blob);
-    final String accountid = getAccountId(address);
+  public String upload(String type, long size, byte[] blob) {
+    var blobid = db.insertFile(blob);
     final Upload upload =
       Upload.builder()
         .size(size)
-        .accountId(accountid)
+        .accountId("null")
         .blobId(blobid)
         .type(type)
         .build();
@@ -56,7 +58,7 @@ public class Dispatcher {
   }
 
   public byte[] download(String blobid) {
-    return new Database().getFile(blobid);
+    return db.getFile(blobid);
   }
 
   public String session(String address) {
@@ -102,7 +104,12 @@ public class Dispatcher {
   }
 
   public String reset() {
-    new Database().reset();
+    var accounts = new LinkedList<String[]>();
+    for (var acc : System.getenv("ACCOUNTS").split(",")) {
+      accounts.add(acc.split(":"));
+    }
+    var domain = System.getenv("DOMAIN");
+    db.reset(domain, accounts);
     return "Reset Done";
   }
 }

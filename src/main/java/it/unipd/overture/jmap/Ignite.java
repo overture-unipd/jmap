@@ -14,8 +14,6 @@ import java.io.ByteArrayInputStream;
 
 public class Ignite {
   public static void main(String[] args) {
-    var dispatcher = new Dispatcher();
-
     port(8000);
 
     get("/", (q, a) -> "Yeah I'm up");
@@ -27,6 +25,7 @@ public class Ignite {
       if (auth == null) {
         halt(401, "Requests have to be authenticated.");
       }
+      var dispatcher = new Dispatcher(new Database());
       var creds = dispatcher.extractAuth(auth);
       var address = creds[0];
       var password = creds[1];
@@ -37,30 +36,32 @@ public class Ignite {
 
     get("/api/jmap", (q, a) -> {
       a.type("application/json");
+      var dispatcher = new Dispatcher(new Database());
       var address = dispatcher.extractAuth(q.headers("Authorization"))[0];
       return dispatcher.session(address);
     });
 
     post("/api/jmap", (q, a) -> {
       a.type("application/json");
+      var dispatcher = new Dispatcher(new Database());
       var address = dispatcher.extractAuth(q.headers("Authorization"))[0];
       return dispatcher.jmap(address, q.body());
     });
 
     post("/api/upload", (q, a) -> {
       a.type("application/json");
-      var address = dispatcher.extractAuth(q.headers("Authorization"))[0];
       var type = q.headers("Content-Type");
       var size = q.contentLength();
       var blob = q.bodyAsBytes();
-      return dispatcher.upload(address, type, size, blob);
+      var dispatcher = new Dispatcher(new Database());
+      return dispatcher.upload(type, size, blob);
     });
 
 
     get("/api/download", (q, a) -> {
       // TODO: should really be:   "downloadUrl": "https://www.fastmailusercontent.com/jmap/download/{accountId}/{blobId}/{name}?type={type}",
+      var dispatcher = new Dispatcher(new Database());
       var blobid = q.queryParams("blobid");
-
       var blob = dispatcher.download(blobid);
       if (blob == null) {
         halt(500, "Something went wrong with the download.");
@@ -78,6 +79,6 @@ public class Ignite {
       return null;
     });
 
-    get("/reset", (q, a) -> dispatcher.reset());
+    get("/reset", (q, a) -> new Dispatcher(new Database()).reset());
   }
 }

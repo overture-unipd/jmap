@@ -1,6 +1,7 @@
 package it.unipd.overture.jmap;
 
 import java.util.Base64;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import com.google.gson.Gson;
@@ -10,33 +11,39 @@ import com.rethinkdb.gen.exc.ReqlRuntimeError;
 import com.rethinkdb.net.Connection;
 
 public class Database {
-  Configuration conf;
   RethinkDB r;
   Connection conn;
   Gson gson;
+  String db;
 
-  Database() {
-    this.conf = new Configuration();
+  Database(String host, int port, String db) {
     this.r = RethinkDB.r;
-    this.conn = this.r.connection().hostname(conf.getDatabase()).port(28015).connect().use(this.conf.getDbName());
+    this.db = db;
+    this.conn = this.r.connection().hostname(host).port(port).connect().use(db);
     this.gson = new Gson();
   }
 
-  public void reset() {
+  Database() {
+    this(
+      System.getenv("DB_HOST"),
+      Integer.parseInt(System.getenv("DB_PORT")),
+      System.getenv("DB_NAME")
+    );
+  }
+
+  public void reset(String domain, LinkedList<String[]> accounts) {
     try {
-      r.dbDrop(conf.getDbName()).run(conn);
-      // r.dbDrop(conf.getDomain()).run(conn);
+      r.dbDrop(db).run(conn);
     } catch (ReqlRuntimeError e) {
     }
 
-    r.dbCreate(conf.getDbName()).run(conn);
-    // r.dbCreate(conf.getDomain()).run(conn);
+    r.dbCreate(db).run(conn);
 
     r.tableCreate("account").run(conn);
     r.table("account").indexCreate("address").run(conn);
-    for (var acc : conf.getAccounts()) {
+    for (var acc : accounts) {
       r.table("account").insert(
-        r.hashMap("address", acc.getAddress()+"@"+conf.getDomain()).with("password", acc.getPassword()).with("state", r.uuid())
+        r.hashMap("address", acc[0]+"@"+domain).with("password", acc[1]).with("state", r.uuid())
       ).run(conn);
     }
 
@@ -49,7 +56,6 @@ public class Database {
   public String getAccountPassword(String id) {
     var t = r.table("account").get(id).run(conn).first();
     return gson.fromJson(gson.toJson(t), Properties.class).getProperty("password");
-    // r.table("account").getAll(address).g("address").run(conn).first().toString(); // select only the password
   }
 
   public void updateAccountState(String accountid, String state) {
@@ -73,12 +79,18 @@ public class Database {
   }
 
   public byte[] getFile(String id) {
+    System.out.println("id : " + id);
+    try (var c = r.table("file").get(id).toJson().run(conn)) {
+      System.out.println("var c = r.table('file').get(id).toJson().run(conn) : " + c.first().toString());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
     var cursor = r.table("file").get(id).pluck("content").toJson().run(conn);
     var blob = gson.fromJson(cursor.first().toString(), JsonObject.class)
       .getAsJsonObject("content")
       .get("data")
       .getAsString();
-    return Base64.getDecoder().decode(blob.getBytes());
+      return Base64.getDecoder().decode(blob.getBytes());
   }
 
   public String getAccountId(String address) {
