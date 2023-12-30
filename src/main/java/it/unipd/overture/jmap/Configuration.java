@@ -4,6 +4,10 @@ import it.unipd.overture.jmap.entities.Account;
 import java.util.LinkedList;
 
 public class Configuration {
+  public String getDbName() {
+    return getDomain().split("\\.")[0];
+  }
+
   public String getDomain() {
     return System.getenv("DOMAIN");
   }

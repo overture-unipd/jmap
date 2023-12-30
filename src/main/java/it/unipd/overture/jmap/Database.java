@@ -18,18 +18,18 @@ public class Database {
   Database() {
     this.conf = new Configuration();
     this.r = RethinkDB.r;
-    this.conn = this.r.connection().hostname(conf.getDatabase()).port(28015).connect().use(this.conf.getDomain());
+    this.conn = this.r.connection().hostname(conf.getDatabase()).port(28015).connect().use(this.conf.getDbName());
     this.gson = new Gson();
   }
 
   public void reset() {
     try {
-      r.dbDrop(conf.getDomain()).run(conn);
+      r.dbDrop(conf.getDbName()).run(conn);
       // r.dbDrop(conf.getDomain()).run(conn);
     } catch (ReqlRuntimeError e) {
     }
 
-    r.dbCreate(conf.getDomain()).run(conn);
+    r.dbCreate(conf.getDbName()).run(conn);
     // r.dbCreate(conf.getDomain()).run(conn);
 
     r.tableCreate("account").run(conn);

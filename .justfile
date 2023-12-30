@@ -3,6 +3,7 @@ default:
 
 build:
 	gradle dockerBuildImage
+	docker build -t overture-unipd/caddy:latest -f caddy.dockerfile .
 
 up *CONTAINERS:
 	docker compose up -d {{CONTAINERS}}
@@ -17,10 +18,10 @@ wire:
 	sudo wireshark -f 'host localhost and port 8000'
 
 run:
-	bash -c "source env/overture && DATABASE=localhost && export \$(cut -d= -f1 env/overture) && gradle run"
+	bash -c "source .env && DATABASE=localhost && export \$(cut -d= -f1 .env) && gradle run"
 
 reset:
-	curl localhost:8000/reset
+	bash -c 'source .env && curl https://${DOMAIN}/reset'
 
 shell:
 	gradle --console plain jshell
