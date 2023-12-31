@@ -26,11 +26,11 @@ public class Jmap {
   Gson gson;
   String accountid;
   String request;
+  Database db;
 
-  Jmap(String accountid, String request) {
-    gsonBuilder = new GsonBuilder();
-    JmapAdapters.register(gsonBuilder);
-    gson = gsonBuilder.create();
+  Jmap(Database db, Gson gson, String accountid, String request) {
+    this.db = db;
+    this.gson = gson;
     this.accountid = accountid;
     this.request = request;
   }

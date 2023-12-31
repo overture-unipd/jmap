@@ -27,6 +27,10 @@ public class Dispatcher {
     this.db = db;
   }
 
+  Dispatcher() {
+    this(new Database());
+  }
+
   public String[] extractAuth(String auth) {
     var encoded = auth.split(" ")[1];
     var decoded = new String(Base64.getDecoder().decode(encoded));
@@ -100,7 +104,7 @@ public class Dispatcher {
   }
 
   public String jmap(String username, String body) {
-    return new Jmap(username, body).dispatch();
+    return new Jmap(db, gson, username, body).dispatch();
   }
 
   public String reset() {
