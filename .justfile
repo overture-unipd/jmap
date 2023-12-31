@@ -18,7 +18,7 @@ wire:
 	sudo wireshark -f 'host localhost and port 8000'
 
 run:
-	bash -c "source .env && DATABASE=localhost && export \$(cut -d= -f1 .env) && gradle run"
+	bash -c "source .env && DB_HOST=localhost && export \$(cut -d= -f1 .env) && gradle run"
 
 reset:
 	bash -c 'source .env && curl https://${DOMAIN}/reset'
