@@ -1,6 +1,6 @@
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
@@ -34,8 +34,8 @@ dependencies {
     implementation("com.rethinkdb:rethinkdb-driver:2.4.4")
     implementation("commons-logging:commons-logging:1.3.0")
 
-    implementation("rs.ltt.jmap:jmap-common:0.8.15")
-    implementation("rs.ltt.jmap:jmap-gson:0.8.15")
+    implementation("rs.ltt.jmap:jmap-common:0.8.18")
+    implementation("rs.ltt.jmap:jmap-gson:0.8.18")
     implementation("com.google.code.gson:gson:2.10.1")
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
 
