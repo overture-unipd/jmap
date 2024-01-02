@@ -200,6 +200,8 @@ public class Jmap {
       SetPushSubscriptionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve (se cancello una mail, riappare)
+    // forse non serve realmente, se server non fa advert di websocket e push updates
   }
 
   private MethodResponse[] execute(
@@ -212,6 +214,7 @@ public class Jmap {
       ChangesEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve (disattiva funzionalitá starred, drafts, deleted etc)
   }
 
   private MethodResponse[] execute(
@@ -248,12 +251,14 @@ public class Jmap {
       QueryEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve (spariscono le mail)
   }
 
   private MethodResponse[] execute(
       SetEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve
   }
 
   private MethodResponse[] execute(
@@ -266,6 +271,7 @@ public class Jmap {
       GetIdentityMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve
   }
 
   private MethodResponse[] execute(
@@ -278,18 +284,21 @@ public class Jmap {
       ChangesMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // serve (spariscono le mail)
   }
 
   private MethodResponse[] execute(
       GetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve
   }
 
   protected MethodResponse[] execute(
       QueryChangesMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: non sembra togliere niente
   }
 
   private MethodResponse[] execute(
@@ -302,6 +311,7 @@ public class Jmap {
       SetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve (se cancello una mail, riappare)
   }
 
   private MethodResponse[] execute(
@@ -344,12 +354,14 @@ public class Jmap {
       ChangesThreadMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // serve (sembra rompere starred, archive, drafts etc)
   }
 
   private MethodResponse[] execute(
       GetThreadMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    // TODO: serve
   }
 
   private MethodResponse[] execute(
