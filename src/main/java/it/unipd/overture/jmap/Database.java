@@ -8,7 +8,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.gen.exc.ReqlRuntimeError;
+import com.rethinkdb.model.OptArgs;
 import com.rethinkdb.net.Connection;
+import com.rethinkdb.net.Result;
 
 public class Database {
   RethinkDB r;
@@ -43,12 +45,15 @@ public class Database {
     r.table("account").indexCreate("address").run(conn);
     for (var acc : accounts) {
       r.table("account").insert(
-        r.hashMap("address", acc[0]+"@"+domain).with("password", acc[1]).with("state", r.uuid())
+        r.hashMap("address", acc[0]+"@"+domain).with("password", acc[1]).with("state", "0")
       ).run(conn);
     }
 
-    r.tableCreate("mail").run(conn);
-    r.table("mail").indexCreate("account_id").run(conn);
+    r.tableCreate("email").run(conn);
+
+    r.tableCreate("thread").run(conn);
+
+    r.tableCreate("mailbox").run(conn);
 
     r.tableCreate("file").run(conn);
   }
@@ -58,33 +63,48 @@ public class Database {
     return gson.fromJson(gson.toJson(t), Properties.class).getProperty("password");
   }
 
-  public void updateAccountState(String accountid, String state) {
-    r.table("account").get(accountid).update(r.hashMap("state", state)).run(conn);
+  public void incrementAccountState(String accountid) {
+    r.table("account").get(accountid).update(
+        a -> r.hashMap("state", a.g("state").add(1))
+    ).run(conn);
   }
 
-  public void getMail(String mailid) {
-    System.out.println(r.table("mail").get(mailid).toJson().run(conn));
+  public String getEmail(String id) {
+    var t = r.table("email").get("id").toJson().run(conn);
+    return t.toString();
   }
 
-  public void insertMail(String accountid, Object obj) {
-    var t = r.table("mail").insert(obj).run(conn);
+  public String getAccountEmails(String id) {
+    var t = r.table("email").get(id).toJson().run(conn);
+    return t.toString();
+  }
+
+  public String getAccountState(String accountid) {
+    Properties t = r.table("account").get(accountid).run(conn, Properties.class).single();
+    return t.getProperty("state");
+  }
+
+  public void insertEmail(String accountid, Object obj) {
+    var t = r.table("email").insert(obj).run(conn);
     System.out.println(t);
   }
 
   public String insertFile(byte[] content) {
-    var id = r.table("file").insert(
+    var key = r.table("file").insert(
       r.hashMap("content", content)
     ).toJson().run(conn);
-    return gson.fromJson(id.first().toString(), JsonObject.class).get("generated_keys").getAsString();
+    return gson.fromJson(key.first().toString(), JsonObject.class).get("generated_keys").getAsString();
+  }
+
+  public String insertFile(String id, byte[] content) {
+    var key = r.table("file").insert(
+      r.hashMap("content", content)
+    ).toJson().run(conn);
+    return gson.fromJson(key.first().toString(), JsonObject.class).get("generated_keys").getAsString();
   }
 
   public byte[] getFile(String id) {
-    System.out.println("id : " + id);
-    try (var c = r.table("file").get(id).toJson().run(conn)) {
-      System.out.println("var c = r.table('file').get(id).toJson().run(conn) : " + c.first().toString());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    // Object cursor = r.table("file").get(id).pluck("content").toJson().run(conn, OptArgs.of("binary_format", "raw")).single();
     var cursor = r.table("file").get(id).pluck("content").toJson().run(conn);
     var blob = gson.fromJson(cursor.first().toString(), JsonObject.class)
       .getAsJsonObject("content")
@@ -98,12 +118,8 @@ public class Database {
     return gson.fromJson(gson.toJson(t), Properties.class).getProperty("id");
   }
 
-  public String getAccountState(String id) {
-    var t = r.table("account").get(id).run(conn).first();
-    return gson.fromJson(gson.toJson(t), Properties.class).getProperty("state");
-  }
-
-  public String getAccountMails(String accountid) {
-    return r.table("account").getAll(accountid).run(conn).toString(); // get all emails
+  public String createEmail(String accountid, String email) {
+    var id = r.table("email").insert(r.json(email)).run(conn);
+    return id.toString();
   }
 }

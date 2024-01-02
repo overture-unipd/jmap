@@ -5,9 +5,19 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import java.util.Arrays;
+import java.util.List;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
 
 import rs.ltt.jmap.common.*;
 import rs.ltt.jmap.common.entity.*;
+import rs.ltt.jmap.common.entity.Thread;
 import rs.ltt.jmap.common.method.*;
 import rs.ltt.jmap.common.method.call.core.*;
 import rs.ltt.jmap.common.method.call.email.*;
@@ -19,7 +29,8 @@ import rs.ltt.jmap.common.method.call.thread.*;
 import rs.ltt.jmap.common.method.call.vacation.*;
 import rs.ltt.jmap.common.method.error.*;
 import rs.ltt.jmap.common.method.response.core.*;
-import rs.ltt.jmap.gson.JmapAdapters;
+import rs.ltt.jmap.common.method.response.email.SetEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.thread.GetThreadMethodResponse;
 
 public class Jmap {
   GsonBuilder gsonBuilder;
@@ -35,12 +46,7 @@ public class Jmap {
     this.request = request;
   }
 
-  private String getSessionState() {
-    return new Database().getAccountState(accountid);
-  }
-
   public String dispatch() {
-    // should be in a `try`
     var jmapRequest = gson.fromJson(request, Request.class);
     final GenericResponse response = dispatch(jmapRequest);
     if (response instanceof ErrorResponse) {
@@ -49,7 +55,7 @@ public class Jmap {
     return gson.toJson(response);
   }
 
-  protected GenericResponse dispatch(final Request request) {
+  private GenericResponse dispatch(final Request request) {
     final var methodCalls = request.getMethodCalls();
     final var using = request.getUsing();
     if (using == null || methodCalls == null) {
@@ -65,10 +71,15 @@ public class Jmap {
       }
     }
     return new Response(
-        response.values().toArray(new Response.Invocation[0]), getSessionState());
+        response.values().toArray(new Response.Invocation[0]), getState());
   }
 
-  protected MethodResponse[] dispatch(
+
+  private String getState() {
+    return new Database().getAccountState(accountid);
+  }
+
+  private MethodResponse[] dispatch(
       final MethodCall methodCall,
       final ListMultimap<String, Response.Invocation> previousResponses) {
     /** jmap-core */
@@ -177,7 +188,7 @@ public class Jmap {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       EchoMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {
@@ -185,91 +196,91 @@ public class Jmap {
     };
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       SetPushSubscriptionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetPushSubscriptionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ChangesEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       CopyEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ImportEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ParseEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       QueryChangesEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       QueryEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       SetEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ChangesIdentityMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetIdentityMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       SetIdentityMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ChangesMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
@@ -281,73 +292,73 @@ public class Jmap {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       QueryMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       SetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetSearchSnippetsMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ChangesEmailSubmissionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetEmailSubmissionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       QueryChangesEmailSubmissionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       QueryEmailSubmissionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       SetEmailSubmissionMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       ChangesThreadMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetThreadMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       GetVacationResponseMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
-  protected MethodResponse[] execute(
+  private MethodResponse[] execute(
       SetVacationResponseMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
