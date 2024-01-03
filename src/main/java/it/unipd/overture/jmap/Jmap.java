@@ -74,9 +74,19 @@ public class Jmap {
         response.values().toArray(new Response.Invocation[0]), getState());
   }
 
+   private void createEmail(final Email email) {
+    db.createEmail(accountid, gson.toJson(email));
+    // db.createEmail(accountid, email.getId(), gson.toJson(email));
+    // TODO: either new emailid or return the one set by the database
+    incrementState();
+  }
 
   private String getState() {
     return new Database().getAccountState(accountid);
+  }
+
+  private void incrementState() {
+    db.incrementAccountState(accountid);
   }
 
   private MethodResponse[] dispatch(
@@ -257,8 +267,87 @@ public class Jmap {
   private MethodResponse[] execute(
       SetEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve
+    final String ifInState = methodCall.getIfInState();
+    final Map<String, Map<String, Object>> update = methodCall.getUpdate();
+    final Map<String, Email> create = methodCall.getCreate();
+    final String[] destroy = methodCall.getDestroy();
+    if (destroy != null && destroy.length > 0) {
+      throw new IllegalStateException("MockMailServer does not know how to destroy");
+    }
+    final SetEmailMethodResponse.SetEmailMethodResponseBuilder responseBuilder =
+        SetEmailMethodResponse.builder();
+    final String oldState = getState();
+    if (ifInState != null) {
+      if (!ifInState.equals(oldState)) {
+        return new MethodResponse[] {new StateMismatchMethodErrorResponse()};
+      }
+    }
+    if (update != null) {
+      // TODO: implement it
+    }
+    if (create != null && create.size() > 0) {
+      processCreateEmail(create, responseBuilder, previousResponses);
+    }
+    return new MethodResponse[] {responseBuilder.build()};
+  }
+
+  private void processCreateEmail(
+      Map<String, Email> create,
+      SetEmailMethodResponse.SetEmailMethodResponseBuilder responseBuilder,
+      ListMultimap<String, Response.Invocation> previousResponses) {
+    for (final Map.Entry<String, Email> entry : create.entrySet()) {
+      final String createId = entry.getKey();
+      final String id = UUID.randomUUID().toString();
+      final String threadId = UUID.randomUUID().toString();
+      final Email userSuppliedEmail = entry.getValue();
+      final Map<String, Boolean> mailboxMap = userSuppliedEmail.getMailboxIds();
+      final Email.EmailBuilder emailBuilder =
+          userSuppliedEmail.toBuilder()
+              .id(id)
+              .threadId(threadId)
+              .receivedAt(Instant.now());
+      emailBuilder.clearMailboxIds();
+      for (Map.Entry<String, Boolean> mailboxEntry : mailboxMap.entrySet()) {
+        final String mailboxId =
+            CreationIdResolver.resolveIfNecessary(
+                mailboxEntry.getKey(), previousResponses);
+        emailBuilder.mailboxId(mailboxId, mailboxEntry.getValue());
+      }
+      final List<EmailBodyPart> attachments = userSuppliedEmail.getAttachments();
+      emailBuilder.clearAttachments();
+      if (attachments != null) {
+        for (final EmailBodyPart attachment : attachments) {
+          final String partId = attachment.getPartId();
+          final EmailBodyValue value =
+              partId == null ? null : userSuppliedEmail.getBodyValues().get(partId);
+          if (value != null) {
+            final EmailBodyPart emailBodyPart = injectId(attachment);
+            db.insertFile(
+                emailBodyPart.getBlobId(),
+                value.getValue().getBytes(StandardCharsets.UTF_8));
+            emailBuilder.attachment(emailBodyPart);
+          } else {
+            emailBuilder.attachment(attachment);
+          }
+        }
+      }
+      final Email email = emailBuilder.build();
+  
+      createEmail(email);
+      responseBuilder.created(createId, email);
+    }
+  }
+
+  private static EmailBodyPart injectId(final Attachment attachment) {
+    return EmailBodyPart.builder()
+      // TODO: either get it from the database after insertion,
+      // or insert in the database with a custom id
+        .blobId(UUID.randomUUID().toString())
+        .charset(attachment.getCharset())
+        .type(attachment.getType())
+        .name(attachment.getName())
+        .size(attachment.getSize())
+        .build();
   }
 
   private MethodResponse[] execute(
