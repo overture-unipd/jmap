@@ -85,6 +85,13 @@ public class Jmap {
     return new Database().getAccountState(accountid);
   }
 
+  private List<Email> getAccountEmails() {
+    var mails = db.getAccountEmails(accountid);
+    Type listType = new TypeToken<List<Email>>() {}.getType();
+    List<Email> list = gson.fromJson(mails, listType);
+    return list;
+  }
+
   private void incrementState() {
     db.incrementAccountState(accountid);
   }
