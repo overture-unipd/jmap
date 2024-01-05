@@ -45,7 +45,10 @@ public class Database {
     r.table("account").indexCreate("address").run(conn);
     for (var acc : accounts) {
       r.table("account").insert(
-        r.hashMap("address", acc[0]+"@"+domain).with("password", acc[1]).with("state", "0")
+        r.hashMap("address", acc[0]+"@"+domain)
+          .with("name", acc[0])
+          .with("password", acc[1])
+          .with("state", "0")
       ).run(conn);
     }
 

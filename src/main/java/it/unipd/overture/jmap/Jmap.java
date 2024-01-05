@@ -14,23 +14,25 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import rs.ltt.jmap.common.*;
 import rs.ltt.jmap.common.entity.*;
-import rs.ltt.jmap.common.entity.Thread;
 import rs.ltt.jmap.common.method.*;
 import rs.ltt.jmap.common.method.call.core.*;
 import rs.ltt.jmap.common.method.call.email.*;
 import rs.ltt.jmap.common.method.call.identity.*;
 import rs.ltt.jmap.common.method.call.mailbox.*;
-import rs.ltt.jmap.common.method.call.snippet.GetSearchSnippetsMethodCall;
+import rs.ltt.jmap.common.method.call.snippet.*;
 import rs.ltt.jmap.common.method.call.submission.*;
 import rs.ltt.jmap.common.method.call.thread.*;
 import rs.ltt.jmap.common.method.call.vacation.*;
 import rs.ltt.jmap.common.method.error.*;
 import rs.ltt.jmap.common.method.response.core.*;
-import rs.ltt.jmap.common.method.response.email.SetEmailMethodResponse;
-import rs.ltt.jmap.common.method.response.thread.GetThreadMethodResponse;
+import rs.ltt.jmap.common.method.response.email.*;
+import rs.ltt.jmap.common.method.response.identity.*;
+import rs.ltt.jmap.common.method.response.mailbox.*;
+import rs.ltt.jmap.common.method.response.thread.*;
 
 public class Jmap {
   GsonBuilder gsonBuilder;
@@ -85,11 +87,16 @@ public class Jmap {
     return new Database().getAccountState(accountid);
   }
 
-  private List<Email> getAccountEmails() {
-    var mails = db.getAccountEmails(accountid);
+  private Stream<Email> getAccountEmails(String test) {
+    var emails = db.getAccountEmails(accountid);
     Type listType = new TypeToken<List<Email>>() {}.getType();
-    List<Email> list = gson.fromJson(mails, listType);
-    return list;
+    List<Email> list = gson.fromJson(emails, listType);
+    return list.stream();
+  }
+
+  private Email getEmail(String id) {
+    var email = db.getEmail(id);
+    return  gson.fromJson(email, Email.class);
   }
 
   private void incrementState() {
@@ -243,7 +250,49 @@ public class Jmap {
   private MethodResponse[] execute(
       GetEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
+    final Request.Invocation.ResultReference idsReference = methodCall.getIdsReference();
+    final List<String> ids;
+    if (idsReference != null) {
+      try {
+        ids =
+            Arrays.asList(
+                ResultReferenceResolver.resolve(idsReference, previousResponses));
+      } catch (final IllegalArgumentException e) {
+        return new MethodResponse[] {new InvalidResultReferenceMethodErrorResponse()};
+      }
+    } else {
+      ids = Arrays.asList(methodCall.getIds());
+    }
+    final String[] properties = methodCall.getProperties();
+
+    Stream<Email> emailStream = ids.stream().map(this::getEmail);
+    // Stream<Email> emailStream = ids.stream().map(this::getAccountEmails); // TODO: prefer an implementation along these lines: more efficient
+    // Stream<Email> emailStream = ids.stream().map(emails::get);
+
+    if (Arrays.equals(properties, Email.Properties.THREAD_ID)) {
+      emailStream =
+          emailStream.map(
+              email ->
+                  Email.builder()
+                      .id(email.getId())
+                      .threadId(email.getThreadId())
+                      .build());
+    } else if (Arrays.equals(properties, Email.Properties.MUTABLE)) {
+      emailStream =
+          emailStream.map(
+              email ->
+                  Email.builder()
+                      .id(email.getId())
+                      .keywords(email.getKeywords())
+                      .mailboxIds(email.getMailboxIds())
+                      .build());
+    }
+    return new MethodResponse[] {
+      GetEmailMethodResponse.builder()
+          .list(emailStream.toArray(Email[]::new))
+          .state(db.getAccountState(accountid))
+          .build()
+    };
   }
 
   private MethodResponse[] execute(
