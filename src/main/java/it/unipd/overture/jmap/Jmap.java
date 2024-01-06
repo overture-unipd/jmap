@@ -415,8 +415,18 @@ public class Jmap {
   private MethodResponse[] execute(
       GetIdentityMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve
+    return new MethodResponse[] {
+      GetIdentityMethodResponse.builder()
+          .list(
+              new Identity[] {
+                Identity.builder()
+                    .id(accountid)
+                    .email(db.getAccountAddress(accountid))
+                    .name(db.getAccountName(accountid))
+                    .build()
+              })
+          .build()
+    };
   }
 
   private MethodResponse[] execute(

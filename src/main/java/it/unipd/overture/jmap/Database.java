@@ -61,6 +61,14 @@ public class Database {
     r.tableCreate("file").run(conn);
   }
 
+  public String getAccountName(String id) {
+    return r.table("account").get(id).run(conn, Properties.class).single().getProperty("name");
+  }
+
+  public String getAccountAddress(String id) {
+    return r.table("account").get(id).run(conn, Properties.class).single().getProperty("address");
+  }
+
   public String getAccountPassword(String id) {
     var t = r.table("account").get(id).run(conn).first();
     return gson.fromJson(gson.toJson(t), Properties.class).getProperty("password");
