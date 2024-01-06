@@ -14,8 +14,11 @@ down:
 destroy:
 	docker compose down --remove-orphans --volumes
 
-wire:
-	sudo wireshark -f 'host localhost and port 8000'
+wireshark:
+	sudo wireshark -f 'host 127.0.0.1 and port 8000'
+
+test:
+	gradle test
 
 run:
 	bash -c "source .env && DB_HOST=localhost && export \$(cut -d= -f1 .env) && gradle run"
