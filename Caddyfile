@@ -3,5 +3,6 @@
 	tls {
 		dns duckdns {env.DUCKDNS} {
 		}
+		insecure_secrets_log /tmp/caddy.log # questo serve per salvare log del traffico cifrato (da usare con wireshark)
 	}
 }
