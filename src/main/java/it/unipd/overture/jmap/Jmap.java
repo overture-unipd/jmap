@@ -31,8 +31,8 @@ import rs.ltt.jmap.common.method.error.*;
 import rs.ltt.jmap.common.method.response.core.*;
 import rs.ltt.jmap.common.method.response.email.*;
 import rs.ltt.jmap.common.method.response.identity.*;
-import rs.ltt.jmap.common.method.response.mailbox.*;
-import rs.ltt.jmap.common.method.response.thread.*;
+import rs.ltt.jmap.mock.server.CreationIdResolver;
+import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 
 public class Jmap {
   GsonBuilder gsonBuilder;

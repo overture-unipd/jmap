@@ -36,6 +36,10 @@ dependencies {
 
     implementation("rs.ltt.jmap:jmap-common:0.8.18")
     implementation("rs.ltt.jmap:jmap-gson:0.8.18")
+    implementation("rs.ltt.jmap:jmap-mua:0.8.18")
+    implementation("rs.ltt.jmap:jmap-mua-util:0.8.18")
+    implementation("rs.ltt.jmap:jmap-mock-server:0.8.18")
+
     implementation("com.google.code.gson:gson:2.10.1")
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
 
