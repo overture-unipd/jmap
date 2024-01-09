@@ -1,21 +1,9 @@
 package it.unipd.overture.jmap;
 
-import static spark.Spark.halt;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.ServletOutputStream;
-
-import okio.Buffer;
+import java.util.LinkedList;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.hash.Hashing;
-import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -26,92 +14,58 @@ import rs.ltt.jmap.common.entity.Upload;
 import rs.ltt.jmap.common.entity.capability.CoreCapability;
 import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
 import rs.ltt.jmap.gson.JmapAdapters;
-import spark.Request;
-import spark.Response;
-import spark.utils.IOUtils;
 
 public class Dispatcher {
   GsonBuilder gsonBuilder;
   Gson gson;
+  Database db;
 
-  Dispatcher() {
+  Dispatcher(Database db) {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
     gson = gsonBuilder.create();
+    this.db = db;
   }
 
-  private String[] extractAuth(Request q) {
-    if (q.headers("Authorization") == null) {
-      return null;
-    }
-    var encoded = q.headers("Authorization").split(" ")[1];
+  Dispatcher() {
+    this(new Database());
+  }
+
+  public String[] extractAuth(String auth) {
+    var encoded = auth.split(" ")[1];
     var decoded = new String(Base64.getDecoder().decode(encoded));
     return decoded.split(":");
   }
 
-  public void authenticate(Request q, Response a) {
-    String[] t = extractAuth(q);
-    if (t == null) {
-      halt(401, "Requests have to be authenticated.");
-    }
-    var username = t[0];
-    var password = t[1];
-    if (! new Database().getAccountPassword(getAccountId(username)).equals(password)) {
-      halt(401, "Wrong credentials.");
-    };
+  public boolean authenticate(String address, String password) {
+    return db.getAccountPassword(getAccountId(address)).equals(password);
   }
 
   private String getAccountId(String address) {
-    return new Database().getAccountId(address);
+    return db.getAccountId(address);
   }
 
   private String getAccountState(String accountid) {
-    return new Database().getAccountState(accountid);
+    return db.getAccountState(accountid);
   }
 
-  public String upload(Request q, Response a) {
-    a.type("application/json");
-    String contentType = q.headers("Content-Type");
-    long size = q.contentLength();
-    byte[] blob = q.bodyAsBytes();
-    String blobId = Hashing.sha256().hashBytes(blob).toString();
-    var db = new Database();
-    db.insertFile(blobId, blob);
-    final String username = extractAuth(q)[0];
-    final String accountid = getAccountId(username);
+  public String upload(String type, long size, byte[] blob) {
+    var blobid = db.insertFile(blob);
     final Upload upload =
       Upload.builder()
         .size(size)
-        .accountId(accountid)
-        .blobId(blobId)
-        .type(contentType)
+        .accountId("null")
+        .blobId(blobid)
+        .type(type)
         .build();
     return gson.toJson(upload);
   }
 
-  public Object download(Request q, Response a) {
-    var blobId = q.queryParams("blobid");
-    var file = new Database().getFile(blobId);
-
-    a.header("Content-Disposition", String.format("attachment; filename=\"%s.raw\"", blobId)); // TODO use filename associated, instead of blobid
-    a.type(MediaType.OCTET_STREAM.toString()); // "application/octet-stream"
-    a.raw().setContentLength(file.length);
-
-    try {
-      var is = new ByteArrayInputStream(file);
-      var os = a.raw().getOutputStream();
-      IOUtils.copy(is, os);
-      is.close();
-      os.close();
-    } catch (IOException e) {
-      halt(500, "Something is wrong with the download.");
-    }
-
-    return null;
+  public byte[] download(String blobid) {
+    return db.getFile(blobid);
   }
 
-  public String session(Request q, Response a) {
-    a.type("application/json");
+  public String session(String address) {
     ImmutableMap.Builder<Class<? extends Capability>, Capability> capabilityBuilder =
         ImmutableMap.builder();
     capabilityBuilder.put(
@@ -123,15 +77,14 @@ public class Dispatcher {
             .maxObjectsInSet(1L)
             .maxConcurrentUpload(1L)
             .build());
-    final String username = extractAuth(q)[0];
-    final String accountid = getAccountId(username);
+    final String accountid = getAccountId(address);
     final SessionResource sessionResource =
         SessionResource.builder()
             .apiUrl("/api/jmap")
             .uploadUrl("/api/upload")
-            .downloadUrl("/api/download" + "?blobId={blobId}")
+            .downloadUrl("/api/download" + "?blobid={blobId}")
             .state(getAccountState(accountid))
-            .username(username)
+            .username(address)
             .account(
                 accountid,
                 Account.builder()
@@ -141,7 +94,7 @@ public class Dispatcher {
                         MailAccountCapability.builder()
                             .maxSizeAttachmentsPerEmail(50 * 1024 * 1024L) // 50MiB
                             .build()))
-                  .name(username)
+                  .name(address)
                   .build())
             .capabilities(capabilityBuilder.build())
             .primaryAccounts(ImmutableMap.of(MailAccountCapability.class, accountid))
@@ -150,13 +103,17 @@ public class Dispatcher {
     return gson.toJson(sessionResource);
   }
 
-  public String jmap(Request q, Response a) {
-    a.type("application/json");
-    return new Jmap(getAccountId(extractAuth(q)[0]), q.body()).dispatch();
+  public String jmap(String username, String body) {
+    return new Jmap(db, gson, username, body).dispatch();
   }
 
-  public String reset(Request q, Response a) {
-    new Database().reset();
+  public String reset() {
+    var accounts = new LinkedList<String[]>();
+    for (var acc : System.getenv("ACCOUNTS").split(",")) {
+      accounts.add(acc.split(":"));
+    }
+    var domain = System.getenv("DOMAIN");
+    db.reset(domain, accounts);
     return "Reset Done";
   }
 }

@@ -1,0 +1,7 @@
+{env.DOMAIN} {
+	reverse_proxy {env.HOST}:{env.PORT}
+	tls {
+		dns duckdns {env.DUCKDNS} {
+		}
+	}
+}

@@ -1,13 +1,13 @@
 version: '3.1'
 
 services:
-  over:
+  overture:
     image: overture-unipd/jmap:latest
     restart: unless-stopped
     ports:
       - 8000:8000
     env_file:
-      - ./env/over
+      - .env
 
   database:
     image: rethinkdb:2.4.2-bullseye-slim
@@ -19,5 +19,18 @@ services:
     volumes:
       - rethinkdb:/data
 
+  caddy:
+    image: overture-unipd/caddy:latest
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    env_file:
+      - .env
+    volumes:
+      - caddy_data:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
+
 volumes:
   rethinkdb:
+  caddy_data:
