@@ -27,4 +27,4 @@ reset:
 	bash -c 'source .env && curl https://${DOMAIN}/reset'
 
 shell:
-	gradle --console plain jshell
+	rlwrap gradle --console plain jshell

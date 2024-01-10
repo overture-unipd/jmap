@@ -10,6 +10,7 @@ Repository contenente il codice del gruppo Overture.
 - EditorConfig: impostazioni di formattazione comuni;
 - pre-commit: hook per git, controlla e sistema la formattazione del codice;
 - Caddy: reverse proxy, per avere il servizio in HTTPS.
+- rlwrap: integra readline in Jshell
 
 ## Esecuzione del server
 ```
