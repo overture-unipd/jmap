@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -77,7 +78,7 @@ public class Jmap {
   }
 
    private void createEmail(final Email email) {
-    db.createEmail(accountid, gson.toJson(email));
+    // db.createEmail(accountid, gson.toJson(email));
     // db.createEmail(accountid, email.getId(), gson.toJson(email));
     // TODO: either new emailid or return the one set by the database
     incrementState();
@@ -88,14 +89,16 @@ public class Jmap {
   }
 
   private Stream<Email> getAccountEmails(String test) {
-    var emails = db.getAccountEmails(accountid);
+    // var emails = db.getAccountEmails(accountid);
+    var emails = "";
     Type listType = new TypeToken<List<Email>>() {}.getType();
     List<Email> list = gson.fromJson(emails, listType);
     return list.stream();
   }
 
   private Email getEmail(String id) {
-    var email = db.getEmail(id);
+    //  var email = db.getEmail(id);
+    var email = "";
     return  gson.fromJson(email, Email.class);
   }
 
@@ -378,9 +381,9 @@ public class Jmap {
               partId == null ? null : userSuppliedEmail.getBodyValues().get(partId);
           if (value != null) {
             final EmailBodyPart emailBodyPart = injectId(attachment);
-            db.insertFile(
-                emailBodyPart.getBlobId(),
-                value.getValue().getBytes(StandardCharsets.UTF_8));
+           //  db.insertFile(
+           //      emailBodyPart.getBlobId(),
+           //      value.getValue().getBytes(StandardCharsets.UTF_8));
             emailBuilder.attachment(emailBodyPart);
           } else {
             emailBuilder.attachment(attachment);

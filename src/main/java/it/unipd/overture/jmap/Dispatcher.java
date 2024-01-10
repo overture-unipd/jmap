@@ -50,7 +50,7 @@ public class Dispatcher {
   }
 
   public String upload(String type, long size, byte[] blob) {
-    var blobid = db.insertFile(blob);
+    var blobid = db.insertAttachment(blob);
     final Upload upload =
       Upload.builder()
         .size(size)
@@ -62,7 +62,7 @@ public class Dispatcher {
   }
 
   public byte[] download(String blobid) {
-    return db.getFile(blobid);
+    return db.getAttachment(blobid);
   }
 
   public String session(String address) {
