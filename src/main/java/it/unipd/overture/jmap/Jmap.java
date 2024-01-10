@@ -128,28 +128,13 @@ public class Jmap {
     if (methodCall instanceof EchoMethodCall) {
       return execute((EchoMethodCall) methodCall, previousResponses);
     }
-    if (methodCall instanceof GetPushSubscriptionMethodCall) {
-      return execute((GetPushSubscriptionMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof SetPushSubscriptionMethodCall) {
-      return execute((SetPushSubscriptionMethodCall) methodCall, previousResponses);
-    }
 
     /** jmap-mail / Email */
     if (methodCall instanceof ChangesEmailMethodCall) {
       return execute((ChangesEmailMethodCall) methodCall, previousResponses);
     }
-    if (methodCall instanceof CopyEmailMethodCall) {
-      return execute((CopyEmailMethodCall) methodCall, previousResponses);
-    }
     if (methodCall instanceof GetEmailMethodCall) {
       return execute((GetEmailMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof ImportEmailMethodCall) {
-      return execute((ImportEmailMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof ParseEmailMethodCall) {
-      return execute((ParseEmailMethodCall) methodCall, previousResponses);
     }
     if (methodCall instanceof QueryChangesEmailMethodCall) {
       return execute((QueryChangesEmailMethodCall) methodCall, previousResponses);
@@ -162,14 +147,8 @@ public class Jmap {
     }
 
     /** jmap-mail / Identity */
-    if (methodCall instanceof ChangesIdentityMethodCall) {
-      return execute((ChangesIdentityMethodCall) methodCall, previousResponses);
-    }
     if (methodCall instanceof GetIdentityMethodCall) {
       return execute((GetIdentityMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof SetIdentityMethodCall) {
-      return execute((SetIdentityMethodCall) methodCall, previousResponses);
     }
 
     /** jmap-mail / Mailbox */
@@ -179,36 +158,8 @@ public class Jmap {
     if (methodCall instanceof GetMailboxMethodCall) {
       return execute((GetMailboxMethodCall) methodCall, previousResponses);
     }
-    if (methodCall instanceof QueryChangesMailboxMethodCall) {
-      return execute((QueryChangesMailboxMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof QueryMailboxMethodCall) {
-      return execute((QueryMailboxMethodCall) methodCall, previousResponses);
-    }
     if (methodCall instanceof SetMailboxMethodCall) {
       return execute((SetMailboxMethodCall) methodCall, previousResponses);
-    }
-
-    /** jmap-mail / Snippet */
-    if (methodCall instanceof GetSearchSnippetsMethodCall) {
-      return execute((GetSearchSnippetsMethodCall) methodCall, previousResponses);
-    }
-
-    /** jmap-mail / Submission */
-    if (methodCall instanceof ChangesEmailSubmissionMethodCall) {
-      return execute((ChangesEmailSubmissionMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof GetEmailSubmissionMethodCall) {
-      return execute((GetEmailSubmissionMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof QueryChangesEmailSubmissionMethodCall) {
-      return execute((QueryChangesEmailSubmissionMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof QueryEmailSubmissionMethodCall) {
-      return execute((QueryEmailSubmissionMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof SetEmailSubmissionMethodCall) {
-      return execute((SetEmailSubmissionMethodCall) methodCall, previousResponses);
     }
 
     /** jmap-mail / Thread */
@@ -217,14 +168,6 @@ public class Jmap {
     }
     if (methodCall instanceof GetThreadMethodCall) {
       return execute((GetThreadMethodCall) methodCall, previousResponses);
-    }
-
-    /** jmap-mail / Vacation */
-    if (methodCall instanceof GetVacationResponseMethodCall) {
-      return execute((GetVacationResponseMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof SetVacationResponseMethodCall) {
-      return execute((SetVacationResponseMethodCall) methodCall, previousResponses);
     }
 
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
@@ -239,30 +182,10 @@ public class Jmap {
   }
 
   private MethodResponse[] execute(
-      SetPushSubscriptionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve (se cancello una mail, riappare)
-    // forse non serve realmente, se server non fa advert di websocket e push updates
-  }
-
-  private MethodResponse[] execute(
-      GetPushSubscriptionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
       ChangesEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
     // TODO: serve (disattiva funzionalitá starred, drafts, deleted etc)
-  }
-
-  private MethodResponse[] execute(
-      CopyEmailMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
   private MethodResponse[] execute(
@@ -311,18 +234,6 @@ public class Jmap {
           .state(db.getAccountState(accountid))
           .build()
     };
-  }
-
-  private MethodResponse[] execute(
-      ImportEmailMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      ParseEmailMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
   private MethodResponse[] execute(
@@ -425,12 +336,6 @@ public class Jmap {
   }
 
   private MethodResponse[] execute(
-      ChangesIdentityMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
       GetIdentityMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {
@@ -448,12 +353,6 @@ public class Jmap {
   }
 
   private MethodResponse[] execute(
-      SetIdentityMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
       ChangesMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
@@ -467,60 +366,11 @@ public class Jmap {
     // TODO: serve
   }
 
-  protected MethodResponse[] execute(
-      QueryChangesMailboxMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: non sembra togliere niente
-  }
-
-  private MethodResponse[] execute(
-      QueryMailboxMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
   private MethodResponse[] execute(
       SetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
     return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
     // TODO: serve (se cancello una mail, riappare)
-  }
-
-  private MethodResponse[] execute(
-      GetSearchSnippetsMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      ChangesEmailSubmissionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      GetEmailSubmissionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      QueryChangesEmailSubmissionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      QueryEmailSubmissionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      SetEmailSubmissionMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
   private MethodResponse[] execute(
@@ -537,15 +387,4 @@ public class Jmap {
     // TODO: serve
   }
 
-  private MethodResponse[] execute(
-      GetVacationResponseMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
-
-  private MethodResponse[] execute(
-      SetVacationResponseMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-  }
 }
