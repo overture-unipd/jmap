@@ -103,8 +103,8 @@ public class Dispatcher {
     return gson.toJson(sessionResource);
   }
 
-  public String jmap(String username, String body) {
-    return new Jmap(db, gson, username, body).dispatch();
+  public String jmap(String address, String body) {
+    return new Jmap(db, gson, address).dispatch(body);
   }
 
   public String reset() {

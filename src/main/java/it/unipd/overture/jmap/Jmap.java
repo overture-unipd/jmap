@@ -37,20 +37,22 @@ import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 
 public class Jmap {
-  GsonBuilder gsonBuilder;
+  Database db;
   Gson gson;
   String accountid;
-  String request;
-  Database db;
+  EmailAddress account;
 
-  Jmap(Database db, Gson gson, String accountid, String request) {
+  Jmap(Database db, Gson gson, String address) {
     this.db = db;
     this.gson = gson;
-    this.accountid = accountid;
-    this.request = request;
+    this.accountid = db.getAccountId(address);
+    account = EmailAddress.builder()
+                .email(address)
+                .name(db.getAccountName(accountid))
+                .build();
   }
 
-  public String dispatch() {
+  public String dispatch(String request) {
     var jmapRequest = gson.fromJson(request, Request.class);
     final GenericResponse response = dispatch(jmapRequest);
     if (response instanceof ErrorResponse) {
