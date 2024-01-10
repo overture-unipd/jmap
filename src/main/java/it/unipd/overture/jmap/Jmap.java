@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.lang.reflect.Type;
@@ -76,6 +77,20 @@ public class Jmap {
     return new Response(
         response.values().toArray(new Response.Invocation[0]), getState());
   }
+
+   private Map<String, Email> getEmails() {
+    var json = db.getTable("email");
+    var map = new HashMap<String, Email>();
+    for (var el : json) {
+      var m = gson.fromJson(el, Email.class);
+      map.put(m.getId(), m);
+    }
+    return map;
+  }
+  private String insertEmail(String id, Email email) { // TODO: id is not really used
+    return db.insertInTable("email", gson.toJson(email));
+  }
+
 
    private void createEmail(final Email email) {
     // db.createEmail(accountid, gson.toJson(email));
