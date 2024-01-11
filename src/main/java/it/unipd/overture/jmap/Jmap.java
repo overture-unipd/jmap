@@ -80,7 +80,7 @@ public class Jmap {
         response.values().toArray(new Response.Invocation[0]), getState());
   }
 
-   private Map<String, Email> getEmails() {
+  private Map<String, Email> getEmails() {
     var json = db.getTable("email");
     var map = new HashMap<String, Email>();
     for (var el : json) {
@@ -91,6 +91,22 @@ public class Jmap {
   }
   private String insertEmail(String id, Email email) { // TODO: id is not really used
     return db.insertInTable("email", gson.toJson(email));
+  }
+  private String updateEmail(String id, Email email) {
+    return db.replaceInTable("email", id, gson.toJson(email));
+  }
+
+  private Map<String, MailboxInfo> getMailboxes() {
+    var json = db.getTable("mailbox");
+    var map = new HashMap<String, MailboxInfo>();
+    for (var el : json) {
+      var m = gson.fromJson(el, MailboxInfo.class);
+      map.put(m.getId(), m);
+    }
+    return map;
+  }
+  private String insertMailbox(String id, MailboxInfo mailbox) {
+    return db.insertInTable("mailbox", gson.toJson(mailbox));
   }
 
 
