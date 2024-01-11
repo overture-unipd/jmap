@@ -43,7 +43,7 @@ public class DispatcherTest {
     this.db_port = rethinkDBContainer.getMappedPort(28015);
     this.db_name = "test";
     this.conn = r.connection().hostname(db_host).port(db_port).connect();
-    r.tableCreate("file").run(conn);
+    r.tableCreate("attachment").run(conn);
     dispatcher = new Dispatcher(new Database(db_host, db_port, db_name));
     System.out.println(db_port);
   }
@@ -54,7 +54,7 @@ public class DispatcherTest {
     Gson gson = new Gson();
     String blobId;
 
-    var id = r.table("file").insert(r.hashMap("content", blob)).toJson().run(conn);
+    var id = r.table("attachment").insert(r.hashMap("content", blob)).toJson().run(conn);
     blobId = gson.fromJson(id.first().toString(), JsonObject.class).get("generated_keys").getAsString();
 
     byte[] downloadedBlob = dispatcher.download(blobId);
@@ -63,7 +63,7 @@ public class DispatcherTest {
   }
 
   @Test
-  void testUpload() {
+  void upload() {
     String type = "image/jpeg";
     long size = 4;
     byte[] blob = {1, 2, 3, 4};
@@ -73,7 +73,7 @@ public class DispatcherTest {
     Gson gson = new Gson();
     var blobId = gson.fromJson(result, JsonObject.class).get("blobId").getAsString();
 
-    var cursor = r.table("file").get(blobId).pluck("content").toJson().run(this.conn);
+    var cursor = r.table("attachment").get(blobId).pluck("content").toJson().run(this.conn);
     byte[] uploadedblob =
       Base64.getDecoder().decode(gson.fromJson(cursor.first().toString(), JsonObject.class)
         .getAsJsonObject("content")
