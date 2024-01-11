@@ -41,7 +41,7 @@ public class Database {
     );
   }
 
-  public void reset(String domain, LinkedList<String[]> accounts) {
+  public void reset(LinkedList<String[]> accounts, String domain) {
     try {
       r.dbDrop(db).run(conn);
     } catch (ReqlRuntimeError e) {
@@ -62,7 +62,7 @@ public class Database {
 
     r.tableCreate("email").run(conn);
 
-    r.tableCreate("thread").run(conn);
+    // r.tableCreate("thread").run(conn);
 
     r.tableCreate("mailbox").run(conn);
 

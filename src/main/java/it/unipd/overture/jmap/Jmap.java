@@ -34,7 +34,9 @@ import rs.ltt.jmap.common.method.response.core.*;
 import rs.ltt.jmap.common.method.response.email.*;
 import rs.ltt.jmap.common.method.response.identity.*;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
+import rs.ltt.jmap.mock.server.EmailGenerator;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
+import rs.ltt.jmap.mua.util.MailboxUtil;
 
 public class Jmap {
   Database db;
@@ -42,12 +44,12 @@ public class Jmap {
   String accountid;
   EmailAddress account;
 
-  Jmap(Database db, Gson gson, String address) {
+  Jmap(Database db, Gson gson, String accountid) {
     this.db = db;
     this.gson = gson;
-    this.accountid = db.getAccountId(address);
+    this.accountid = accountid;
     account = EmailAddress.builder()
-                .email(address)
+                .email(db.getAccountAddress(accountid))
                 .name(db.getAccountName(accountid))
                 .build();
   }
@@ -109,8 +111,27 @@ public class Jmap {
     return db.insertInTable("mailbox", gson.toJson(mailbox));
   }
 
+  public void reset() {
+    setup(4, 4);
+  }
 
-   private void createEmail(final Email email) {
+  private void setup(final int numThreads, final int emailCount) {
+    MailboxInfo m = new MailboxInfo(UUID.randomUUID().toString(), "Inbox", Role.INBOX);
+    insertMailbox(m.getId(), m);
+    final String mailboxId = MailboxUtil.find(getMailboxes().values(), Role.INBOX).getId();
+    int count = emailCount;
+    for (int thread = 0; thread < numThreads; ++thread) {
+      final int numInThread = (thread % 4) + 1;
+      for (int i = 0; i < numInThread; ++i) {
+        final Email email =
+          EmailGenerator.get(account, mailboxId, count, thread, i, numInThread);
+        insertEmail(email.getId(), email);
+        count++;
+      }
+    }
+  }
+
+  private void createEmail(final Email email) {
     // db.createEmail(accountid, gson.toJson(email));
     // db.createEmail(accountid, email.getId(), gson.toJson(email));
     // TODO: either new emailid or return the one set by the database

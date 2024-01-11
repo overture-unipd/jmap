@@ -104,7 +104,7 @@ public class Dispatcher {
   }
 
   public String jmap(String address, String body) {
-    return new Jmap(db, gson, address).dispatch(body);
+    return new Jmap(db, gson, db.getAccountId(address)).dispatch(body);
   }
 
   public String reset() {
@@ -113,7 +113,8 @@ public class Dispatcher {
       accounts.add(acc.split(":"));
     }
     var domain = System.getenv("DOMAIN");
-    db.reset(domain, accounts);
+    db.reset(accounts, domain);
+    new Jmap(db, gson, db.getAccountId(db.getAccountId(accounts.get(0)[0]+"@"+domain))).reset(); // reset per primo account
     return "Reset Done";
   }
 }

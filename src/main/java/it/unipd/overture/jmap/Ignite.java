@@ -28,7 +28,10 @@ public class Ignite {
       if (auth == null) {
         halt(401, "Requests have to be authenticated.");
       }
-      var creds = dispatcher.extractAuth(auth);
+      String[] creds = dispatcher.extractAuth(auth);
+      if (creds.length < 2) {
+        halt(401, "Client Error");
+      }
       var address = creds[0];
       var password = creds[1];
       if (! dispatcher.authenticate(address, password)) {
@@ -77,6 +80,6 @@ public class Ignite {
       return null;
     });
 
-    get("/reset", (q, a) -> dispatcher.reset());
+    post("/reset", (q, a) -> dispatcher.reset());
   }
 }
