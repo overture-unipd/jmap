@@ -2,9 +2,11 @@ package it.unipd.overture.jmap;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +40,7 @@ import rs.ltt.jmap.common.method.response.identity.*;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.EmailGenerator;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
+import rs.ltt.jmap.mock.server.Update;
 import rs.ltt.jmap.mua.util.MailboxUtil;
 
 public class Jmap {
@@ -111,6 +114,32 @@ public class Jmap {
   }
   private String insertMailbox(String id, MailboxInfo mailbox) {
     return db.insertInTable("mailbox", gson.toJson(mailbox));
+  }
+
+  private Map<String, Update> getUpdates() {
+    var json = db.getTable("update");
+    var map = new LinkedHashMap<String, Update>();
+    for (var el : json) {
+      var m = gson.fromJson(el, Update.class);
+      map.put(String.valueOf(Integer.parseInt(m.getNewVersion())-1), m);
+    }
+    return map;
+  }
+  private String insertUpdate(String id, Update mailbox) {
+    return db.insertInTable("update", gson.toJson(mailbox));
+  }
+
+  private Update getAccumulatedUpdateSince(final String oldVersion) {
+    final ArrayList<Update> updates = new ArrayList<>();
+    for (Map.Entry<String, Update> updateEntry : getUpdates().entrySet()) {
+      if (updateEntry.getKey().equals(oldVersion) || updates.size() > 0) {
+        updates.add(updateEntry.getValue());
+      }
+    }
+    if (updates.isEmpty()) {
+      return null;
+    }
+    return Update.merge(updates);
   }
 
   public void reset() {

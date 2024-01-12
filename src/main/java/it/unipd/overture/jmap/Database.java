@@ -61,12 +61,9 @@ public class Database {
     }
 
     r.tableCreate("email").run(conn);
-
-    // r.tableCreate("thread").run(conn);
-
     r.tableCreate("mailbox").run(conn);
-
     r.tableCreate("attachment").run(conn);
+    r.tableCreate("update").run(conn);
   }
 
   public String getAccountName(String id) {
