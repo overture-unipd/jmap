@@ -37,6 +37,7 @@ import rs.ltt.jmap.common.method.error.*;
 import rs.ltt.jmap.common.method.response.core.*;
 import rs.ltt.jmap.common.method.response.email.*;
 import rs.ltt.jmap.common.method.response.identity.*;
+import rs.ltt.jmap.common.method.response.mailbox.GetMailboxMethodResponse;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.EmailGenerator;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
@@ -478,8 +479,61 @@ public class Jmap {
   private MethodResponse[] execute(
       GetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve
+    final Request.Invocation.ResultReference idsReference = methodCall.getIdsReference();
+    final List<String> ids;
+    if (idsReference != null) {
+      try {
+        ids =
+          Arrays.asList(
+            ResultReferenceResolver.resolve(idsReference, previousResponses));
+      } catch (final IllegalArgumentException e) {
+        return new MethodResponse[] {new InvalidResultReferenceMethodErrorResponse()};
+      }
+    } else {
+      final String[] idsParameter = methodCall.getIds();
+      ids = idsParameter == null ? null : Arrays.asList(idsParameter);
+    }
+    Stream<Mailbox> mailboxStream = getMailboxes().values().stream().map(this::toMailbox);
+    return new MethodResponse[] {
+      GetMailboxMethodResponse.builder()
+        .list(
+          mailboxStream
+            .filter(m -> ids == null || ids.contains(m.getId()))
+            .toArray(Mailbox[]::new))
+        .state(getState())
+        .build()
+    };
+  }
+
+  private Mailbox toMailbox(MailboxInfo mailboxInfo) {
+    var emails = getEmails();
+    return Mailbox.builder()
+      .id(mailboxInfo.getId())
+      .name(mailboxInfo.getName())
+      .role(mailboxInfo.getRole())
+      .totalEmails(
+        emails.values().stream()
+          .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
+          .count())
+      .unreadEmails(
+        emails.values().stream()
+          .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
+          // .filter(e -> !e.getKeywords().containsKey(Keyword.SEEN))
+          .count())
+      .totalThreads(
+        emails.values().stream()
+          .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
+          .map(Email::getThreadId)
+          .distinct()
+          .count())
+      .unreadThreads(
+        emails.values().stream()
+          .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
+          // .filter(e -> !e.getKeywords().containsKey(Keyword.SEEN))
+          .map(Email::getThreadId)
+          .distinct()
+          .count())
+      .build();
   }
 
   private MethodResponse[] execute(
