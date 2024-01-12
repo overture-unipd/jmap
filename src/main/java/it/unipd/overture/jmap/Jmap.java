@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -38,10 +39,12 @@ import rs.ltt.jmap.common.method.response.core.*;
 import rs.ltt.jmap.common.method.response.email.*;
 import rs.ltt.jmap.common.method.response.identity.*;
 import rs.ltt.jmap.common.method.response.mailbox.GetMailboxMethodResponse;
+import rs.ltt.jmap.common.method.response.mailbox.SetMailboxMethodResponse;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.EmailGenerator;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 import rs.ltt.jmap.mock.server.Update;
+import rs.ltt.jmap.mock.server.util.FuzzyRoleParser;
 import rs.ltt.jmap.mua.util.MailboxUtil;
 
 public class Jmap {
@@ -126,8 +129,8 @@ public class Jmap {
     }
     return map;
   }
-  private String insertUpdate(String id, Update mailbox) {
-    return db.insertInTable("update", gson.toJson(mailbox));
+  private String insertUpdate(String id, Update update) {
+    return db.insertInTable("update", gson.toJson(update));
   }
 
   private Update getAccumulatedUpdateSince(final String oldVersion) {
@@ -539,8 +542,88 @@ public class Jmap {
   private MethodResponse[] execute(
       SetMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve (se cancello una mail, riappare)
+    final String ifInState = methodCall.getIfInState();
+    final SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder =
+        SetMailboxMethodResponse.builder();
+    final Map<String, Mailbox> create = methodCall.getCreate();
+    final Map<String, Map<String, Object>> update = methodCall.getUpdate();
+    final String oldState = getState();
+    if (ifInState != null) {
+      if (!ifInState.equals(oldState)) {
+        return new MethodResponse[] {new StateMismatchMethodErrorResponse()};
+      }
+    }
+    if (create != null && create.size() > 0) {
+      processCreateMailbox(create, responseBuilder);
+    }
+    if (update != null && update.size() > 0) {
+      processUpdateMailbox(update, responseBuilder, previousResponses);
+    }
+    incrementState();
+    final SetMailboxMethodResponse setMailboxResponse = responseBuilder.build();
+    insertUpdate(oldState, Update.of(setMailboxResponse, getState()));
+    return new MethodResponse[] {setMailboxResponse};
+  }
+
+  private void processCreateMailbox(
+      final Map<String, Mailbox> create,
+      final SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder) {
+    for (Map.Entry<String, Mailbox> entry : create.entrySet()) {
+      final String createId = entry.getKey();
+      final Mailbox mailbox = entry.getValue();
+      final String name = mailbox.getName();
+      if (getMailboxes().values().stream()
+          .anyMatch(mailboxInfo -> mailboxInfo.getName().equals(name))) {
+        responseBuilder.notCreated(
+            createId,
+            new SetError(
+                SetErrorType.INVALID_PROPERTIES,
+                "A mailbox with the name " + name + " already exists"));
+        continue;
+      }
+      final String id = UUID.randomUUID().toString();
+      final MailboxInfo mailboxInfo = new MailboxInfo(id, name, mailbox.getRole());
+      insertMailbox(id, mailboxInfo);
+      responseBuilder.created(createId, toMailbox(mailboxInfo));
+    }
+  }
+
+  private void processUpdateMailbox(
+      Map<String, Map<String, Object>> update,
+      SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder,
+      ListMultimap<String, Response.Invocation> previousResponses) {
+    for (final Map.Entry<String, Map<String, Object>> entry : update.entrySet()) {
+      final String id = entry.getKey();
+      try {
+        final MailboxInfo modifiedMailbox =
+            patchMailbox(id, entry.getValue(), previousResponses);
+        responseBuilder.updated(id, toMailbox(modifiedMailbox));
+        insertMailbox(modifiedMailbox.getId(), modifiedMailbox);
+      } catch (final IllegalArgumentException e) {
+        responseBuilder.notUpdated(
+            id, new SetError(SetErrorType.INVALID_PROPERTIES, e.getMessage()));
+      }
+    }
+  }
+
+  private MailboxInfo patchMailbox(
+      final String id,
+      final Map<String, Object> patches,
+      ListMultimap<String, Response.Invocation> previousResponses) {
+    final MailboxInfo currentMailbox = getMailboxes().get(id);
+    for (final Map.Entry<String, Object> patch : patches.entrySet()) {
+      final String fullPath = patch.getKey();
+      final Object modification = patch.getValue();
+      final List<String> pathParts = Splitter.on('/').splitToList(fullPath);
+      final String parameter = pathParts.get(0);
+      if ("role".equals(parameter)) {
+        final Role role = FuzzyRoleParser.parse((String) modification);
+        return new MailboxInfo(currentMailbox.getId(), currentMailbox.getName(), role);
+      } else {
+        throw new IllegalArgumentException("Unable to patch " + fullPath);
+      }
+    }
+    return currentMailbox;
   }
 
   private MethodResponse[] execute(
