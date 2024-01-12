@@ -19,12 +19,12 @@ import com.rethinkdb.utils.Types;
 // Examples of driver usage: https://github.com/rethinkdb/rethinkdb-java/blob/master/src/test/java/com/rethinkdb/RethinkDBTest.java
 
 public class Database {
-  RethinkDB r;
-  Connection conn;
-  Gson gson;
-  String db;
-  final TypeReference<List<String>> stringList = Types.listOf(String.class);
-  final TypeReference<Map<String, Object>> stringObjectMap = Types.mapOf(String.class, Object.class);
+  private RethinkDB r;
+  private Connection conn;
+  private Gson gson;
+  private String db;
+  private final TypeReference<List<String>> stringList = Types.listOf(String.class);
+  private final TypeReference<Map<String, Object>> stringObjectMap = Types.mapOf(String.class, Object.class);
 
   Database(String host, int port, String db) {
     this.r = RethinkDB.r;

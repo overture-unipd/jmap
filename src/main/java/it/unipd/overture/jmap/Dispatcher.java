@@ -16,9 +16,9 @@ import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
 import rs.ltt.jmap.gson.JmapAdapters;
 
 public class Dispatcher {
-  GsonBuilder gsonBuilder;
-  Gson gson;
-  Database db;
+  private GsonBuilder gsonBuilder;
+  private Gson gson;
+  private Database db;
 
   Dispatcher(Database db) {
     gsonBuilder = new GsonBuilder();
