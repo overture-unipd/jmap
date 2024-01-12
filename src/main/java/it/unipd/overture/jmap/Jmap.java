@@ -1,34 +1,36 @@
 package it.unipd.overture.jmap;
 
+import java.lang.reflect.Type;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import rs.ltt.jmap.common.*;
 import rs.ltt.jmap.common.entity.*;
+import rs.ltt.jmap.common.entity.filter.EmailFilterCondition;
+import rs.ltt.jmap.common.entity.filter.Filter;
 import rs.ltt.jmap.common.method.*;
 import rs.ltt.jmap.common.method.call.core.*;
 import rs.ltt.jmap.common.method.call.email.*;
 import rs.ltt.jmap.common.method.call.identity.*;
 import rs.ltt.jmap.common.method.call.mailbox.*;
-import rs.ltt.jmap.common.method.call.snippet.*;
-import rs.ltt.jmap.common.method.call.submission.*;
 import rs.ltt.jmap.common.method.call.thread.*;
-import rs.ltt.jmap.common.method.call.vacation.*;
 import rs.ltt.jmap.common.method.error.*;
 import rs.ltt.jmap.common.method.response.core.*;
 import rs.ltt.jmap.common.method.response.email.*;
@@ -39,10 +41,10 @@ import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 import rs.ltt.jmap.mua.util.MailboxUtil;
 
 public class Jmap {
-  Database db;
-  Gson gson;
-  String accountid;
-  EmailAddress account;
+  private Database db;
+  private Gson gson;
+  private String accountid;
+  private EmailAddress account;
 
   Jmap(Database db, Gson gson, String accountid) {
     this.db = db;
@@ -132,14 +134,16 @@ public class Jmap {
   }
 
   private void createEmail(final Email email) {
-    // db.createEmail(accountid, gson.toJson(email));
-    // db.createEmail(accountid, email.getId(), gson.toJson(email));
-    // TODO: either new emailid or return the one set by the database
+    insertEmail(email.getId(), email);
     incrementState();
   }
 
   private String getState() {
-    return new Database().getAccountState(accountid);
+    return db.getAccountState(accountid);
+  }
+
+  private void incrementState() {
+    db.incrementAccountState(accountid);
   }
 
   private Stream<Email> getAccountEmails(String test) {
@@ -156,10 +160,6 @@ public class Jmap {
     return  gson.fromJson(email, Email.class);
   }
 
-  private void incrementState() {
-    db.incrementAccountState(accountid);
-  }
-
   private MethodResponse[] dispatch(
       final MethodCall methodCall,
       final ListMultimap<String, Response.Invocation> previousResponses) {
@@ -174,9 +174,6 @@ public class Jmap {
     }
     if (methodCall instanceof GetEmailMethodCall) {
       return execute((GetEmailMethodCall) methodCall, previousResponses);
-    }
-    if (methodCall instanceof QueryChangesEmailMethodCall) {
-      return execute((QueryChangesEmailMethodCall) methodCall, previousResponses);
     }
     if (methodCall instanceof QueryEmailMethodCall) {
       return execute((QueryEmailMethodCall) methodCall, previousResponses);
@@ -235,8 +232,8 @@ public class Jmap {
     if (idsReference != null) {
       try {
         ids =
-            Arrays.asList(
-                ResultReferenceResolver.resolve(idsReference, previousResponses));
+          Arrays.asList(
+            ResultReferenceResolver.resolve(idsReference, previousResponses));
       } catch (final IllegalArgumentException e) {
         return new MethodResponse[] {new InvalidResultReferenceMethodErrorResponse()};
       }
@@ -244,48 +241,99 @@ public class Jmap {
       ids = Arrays.asList(methodCall.getIds());
     }
     final String[] properties = methodCall.getProperties();
-
-    Stream<Email> emailStream = ids.stream().map(this::getEmail);
-    // Stream<Email> emailStream = ids.stream().map(this::getAccountEmails); // TODO: prefer an implementation along these lines: more efficient
-    // Stream<Email> emailStream = ids.stream().map(emails::get);
-
+    Stream<Email> emailStream = ids.stream().map(getEmails()::get);
     if (Arrays.equals(properties, Email.Properties.THREAD_ID)) {
       emailStream =
-          emailStream.map(
-              email ->
-                  Email.builder()
-                      .id(email.getId())
-                      .threadId(email.getThreadId())
-                      .build());
+        emailStream.map(
+          email ->
+            Email.builder()
+              .id(email.getId())
+              .threadId(email.getThreadId())
+              .build());
     } else if (Arrays.equals(properties, Email.Properties.MUTABLE)) {
       emailStream =
-          emailStream.map(
-              email ->
-                  Email.builder()
-                      .id(email.getId())
-                      .keywords(email.getKeywords())
-                      .mailboxIds(email.getMailboxIds())
-                      .build());
+        emailStream.map(
+          email ->
+            Email.builder()
+              .id(email.getId())
+              .keywords(email.getKeywords())
+              .mailboxIds(email.getMailboxIds())
+              .build());
     }
     return new MethodResponse[] {
       GetEmailMethodResponse.builder()
-          .list(emailStream.toArray(Email[]::new))
-          .state(db.getAccountState(accountid))
-          .build()
+        .list(emailStream.toArray(Email[]::new))
+        .state(getState())
+        .build()
     };
-  }
-
-  private MethodResponse[] execute(
-      QueryChangesEmailMethodCall methodCall,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
   }
 
   private MethodResponse[] execute(
       QueryEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve (spariscono le mail)
+    final Filter<Email> filter = methodCall.getFilter();
+    Stream<Email> stream = getEmails().values().stream();
+    stream = applyFilter(filter, stream);
+    stream = stream.sorted(Comparator.comparing(Email::getReceivedAt).reversed());
+    if (Boolean.TRUE.equals(methodCall.getCollapseThreads())) {
+      stream = stream.filter(distinctByKey(Email::getThreadId));
+    }
+    final List<String> ids = stream.map(Email::getId).collect(Collectors.toList());
+    final String anchor = methodCall.getAnchor();
+    final int position;
+    if (anchor != null) {
+      final Long anchorOffset = methodCall.getAnchorOffset();
+      final int anchorPosition = ids.indexOf(anchor);
+      if (anchorPosition == -1) {
+        return new MethodResponse[] {new AnchorNotFoundMethodErrorResponse()};
+      }
+      position = Math.toIntExact(anchorPosition + (anchorOffset == null ? 0 : anchorOffset));
+    } else {
+      position =
+        Math.toIntExact(
+          methodCall.getPosition() == null ? 0 : methodCall.getPosition());
+    }
+    final int limit =
+      Math.toIntExact(methodCall.getLimit() == null ? 40 : methodCall.getLimit());
+    final int endPosition = Math.min(position + limit, ids.size());
+    final String[] page = ids.subList(position, endPosition).toArray(new String[0]);
+    final Long total =
+      Boolean.TRUE.equals(methodCall.getCalculateTotal()) ? (long) ids.size() : null;
+    return new MethodResponse[] {
+      QueryEmailMethodResponse.builder()
+        .canCalculateChanges(false)
+        .queryState(getState())
+        .total(total)
+        .ids(page)
+        .position((long) position)
+        .build()
+    };
+  }
+
+  private static Stream<Email> applyFilter(
+      final Filter<Email> filter, Stream<Email> emailStream) {
+    if (filter instanceof EmailFilterCondition) {
+      final EmailFilterCondition emailFilterCondition = (EmailFilterCondition) filter;
+      final String inMailbox = emailFilterCondition.getInMailbox();
+      if (inMailbox != null) {
+        emailStream =
+          emailStream.filter(email -> email.getMailboxIds().containsKey(inMailbox));
+      }
+      final String[] header = emailFilterCondition.getHeader();
+      if (header != null
+          && header.length == 2
+          && header[0].equals("Autocrypt-Setup-Message")) {
+        emailStream =
+          emailStream.filter(
+            email -> header[1].equals(email.getAutocryptSetupMessage()));
+      }
+    }
+    return emailStream;
+  }
+
+  private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    final Set<Object> seen = ConcurrentHashMap.newKeySet();
+    return t -> seen.add(keyExtractor.apply(t));
   }
 
   private MethodResponse[] execute(
