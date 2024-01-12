@@ -38,8 +38,10 @@ import rs.ltt.jmap.common.method.error.*;
 import rs.ltt.jmap.common.method.response.core.*;
 import rs.ltt.jmap.common.method.response.email.*;
 import rs.ltt.jmap.common.method.response.identity.*;
+import rs.ltt.jmap.common.method.response.mailbox.ChangesMailboxMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.GetMailboxMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.SetMailboxMethodResponse;
+import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.EmailGenerator;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
@@ -475,8 +477,36 @@ public class Jmap {
   private MethodResponse[] execute(
       ChangesMailboxMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // serve (spariscono le mail)
+    final String since = methodCall.getSinceState();
+    if (since != null && since.equals(getState())) {
+      return new MethodResponse[] {
+        ChangesMailboxMethodResponse.builder()
+          .oldState(getState())
+          .newState(getState())
+          .updated(new String[0])
+          .created(new String[0])
+          .destroyed(new String[0])
+          .updatedProperties(new String[0])
+          .build()
+      };
+    } else {
+      final Update update = getAccumulatedUpdateSince(since);
+      if (update == null) {
+        return new MethodResponse[] {new CannotCalculateChangesMethodErrorResponse()};
+      } else {
+        final Changes changes = update.getChangesFor(Mailbox.class);
+        return new MethodResponse[] {
+          ChangesMailboxMethodResponse.builder()
+            .oldState(since)
+            .newState(update.getNewVersion())
+            .updated(changes.updated)
+            .created(changes.created)
+            .destroyed(new String[0])
+            .hasMoreChanges(!update.getNewVersion().equals(getState()))
+            .build()
+        };
+      }
+    }
   }
 
   private MethodResponse[] execute(
