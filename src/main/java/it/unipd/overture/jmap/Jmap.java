@@ -57,6 +57,7 @@ public class Jmap {
   private Gson gson;
   private String accountid;
   private EmailAddress account;
+  private final LinkedHashMap<String, Update> updates = new LinkedHashMap<>();
 
   Jmap(Database db, Gson gson, String accountid) {
     this.db = db;
@@ -126,6 +127,7 @@ public class Jmap {
   }
 
   private Map<String, Update> getUpdates() {
+    /*
     var json = db.getTable("update");
     var map = new LinkedHashMap<String, Update>();
     for (var el : json) {
@@ -133,9 +135,13 @@ public class Jmap {
       map.put(String.valueOf(Integer.parseInt(m.getNewVersion())-1), m);
     }
     return map;
+    */
+    return updates;
   }
   private String insertUpdate(String id, Update update) {
-    return db.insertInTable("update", gson.toJson(update));
+    // return db.insertInTable("update", gson.toJson(update));
+    updates.put(id, update);
+    return "";
   }
 
   private Update getAccumulatedUpdateSince(final String oldVersion) {
@@ -499,15 +505,16 @@ public class Jmap {
       final Email userSuppliedEmail = entry.getValue();
       final Map<String, Boolean> mailboxMap = userSuppliedEmail.getMailboxIds();
       final Email.EmailBuilder emailBuilder =
-          userSuppliedEmail.toBuilder()
-              .id(id)
-              .threadId(threadId)
-              .receivedAt(Instant.now());
+        userSuppliedEmail.toBuilder()
+          .id(id)
+          .threadId(threadId)
+          .receivedAt(Instant.now())
+          .bodyStructure(userSuppliedEmail.getTextBody().get(0));
       emailBuilder.clearMailboxIds();
       for (Map.Entry<String, Boolean> mailboxEntry : mailboxMap.entrySet()) {
         final String mailboxId =
-            CreationIdResolver.resolveIfNecessary(
-                mailboxEntry.getKey(), previousResponses);
+          CreationIdResolver.resolveIfNecessary(
+            mailboxEntry.getKey(), previousResponses);
         emailBuilder.mailboxId(mailboxId, mailboxEntry.getValue());
       }
       final List<EmailBodyPart> attachments = userSuppliedEmail.getAttachments();

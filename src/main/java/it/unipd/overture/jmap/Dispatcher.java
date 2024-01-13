@@ -114,7 +114,7 @@ public class Dispatcher {
     }
     var domain = System.getenv("DOMAIN");
     db.reset(accounts, domain);
-    new Jmap(db, gson, db.getAccountId(db.getAccountId(accounts.get(0)[0]+"@"+domain))).reset(); // reset per primo account
+    new Jmap(db, gson, db.getAccountId(accounts.get(0)[0]+"@"+domain)).reset(); // reset per primo account
     return "Reset Done";
   }
 }

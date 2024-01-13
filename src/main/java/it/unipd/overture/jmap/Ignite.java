@@ -80,6 +80,6 @@ public class Ignite {
       return null;
     });
 
-    post("/reset", (q, a) -> dispatcher.reset());
+    get("/reset", (q, a) -> dispatcher.reset());
   }
 }
