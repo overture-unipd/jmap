@@ -393,12 +393,72 @@ public class Jmap {
       }
     }
     if (update != null) {
-      // TODO: implement it
+      final List<Email> modifiedEmails = new ArrayList<>();
+      for (final Map.Entry<String, Map<String, Object>> entry : update.entrySet()) {
+        final String id = entry.getKey();
+        try {
+          final Email modifiedEmail = patchEmail(id, entry.getValue(), previousResponses);
+          modifiedEmails.add(modifiedEmail);
+          responseBuilder.updated(id, modifiedEmail);
+        } catch (final IllegalArgumentException e) {
+          responseBuilder.notUpdated(
+            id, new SetError(SetErrorType.INVALID_PROPERTIES, e.getMessage()));
+        }
+      }
+      for (final Email email : modifiedEmails) {
+        updateEmail(email.getId(), email);
+      }
+      incrementState();
+      final String newState = getState();
+      insertUpdate(oldState, Update.updated(modifiedEmails, getMailboxes().keySet(), newState));
     }
     if (create != null && create.size() > 0) {
       processCreateEmail(create, responseBuilder, previousResponses);
     }
     return new MethodResponse[] {responseBuilder.build()};
+  }
+
+  private Email patchEmail(
+      final String id,
+      final Map<String, Object> patches,
+      ListMultimap<String, Response.Invocation> previousResponses) {
+    final Email.EmailBuilder emailBuilder = getEmails().get(id).toBuilder();
+    for (final Map.Entry<String, Object> patch : patches.entrySet()) {
+      final String fullPath = patch.getKey();
+      final Object modification = patch.getValue();
+      final List<String> pathParts = Splitter.on('/').splitToList(fullPath);
+      final String parameter = pathParts.get(0);
+      if (parameter.equals("keywords")) {
+        if (pathParts.size() == 2 && modification instanceof Boolean) {
+          final String keyword = pathParts.get(1);
+          final Boolean value = (Boolean) modification;
+          emailBuilder.keyword(keyword, value);
+        } else {
+          throw new IllegalArgumentException(
+              "Keyword modification was not split into two parts");
+        }
+      } else if (parameter.equals("mailboxIds")) {
+        if (pathParts.size() == 2 && modification instanceof Boolean) {
+          final String mailboxId = pathParts.get(1);
+          final Boolean value = (Boolean) modification;
+          emailBuilder.mailboxId(mailboxId, value);
+        } else if (modification instanceof Map) {
+          final Map<String, Boolean> mailboxMap = (Map<String, Boolean>) modification;
+          emailBuilder.clearMailboxIds();
+          for (Map.Entry<String, Boolean> mailboxEntry : mailboxMap.entrySet()) {
+            final String mailboxId =
+                CreationIdResolver.resolveIfNecessary(
+                    mailboxEntry.getKey(), previousResponses);
+            emailBuilder.mailboxId(mailboxId, mailboxEntry.getValue());
+          }
+        } else {
+          throw new IllegalArgumentException("Unknown patch object for path " + fullPath);
+        }
+      } else {
+        throw new IllegalArgumentException("Unable to patch " + fullPath);
+      }
+    }
+    return emailBuilder.build();
   }
 
   private void processCreateEmail(
@@ -449,9 +509,8 @@ public class Jmap {
   }
 
   private static EmailBodyPart injectId(final Attachment attachment) {
+    // TODO: vedi allegati in processCreateEmail
     return EmailBodyPart.builder()
-      // TODO: either get it from the database after insertion,
-      // or insert in the database with a custom id
         .blobId(UUID.randomUUID().toString())
         .charset(attachment.getCharset())
         .type(attachment.getType())
