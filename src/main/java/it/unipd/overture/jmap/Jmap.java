@@ -258,8 +258,35 @@ public class Jmap {
   private MethodResponse[] execute(
       ChangesEmailMethodCall methodCall,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    return new MethodResponse[] {new UnknownMethodMethodErrorResponse()};
-    // TODO: serve (disattiva funzionalitá starred, drafts, deleted etc)
+    final String since = methodCall.getSinceState();
+    if (since != null && since.equals(getState())) {
+      return new MethodResponse[] {
+        ChangesEmailMethodResponse.builder()
+          .oldState(getState())
+          .newState(getState())
+          .updated(new String[0])
+          .created(new String[0])
+          .destroyed(new String[0])
+          .build()
+      };
+    } else {
+      final Update update = getAccumulatedUpdateSince(since);
+      if (update == null) {
+        return new MethodResponse[] {new CannotCalculateChangesMethodErrorResponse()};
+      } else {
+        final Changes changes = update.getChangesFor(Email.class);
+        return new MethodResponse[] {
+          ChangesEmailMethodResponse.builder()
+            .oldState(since)
+            .newState(update.getNewVersion())
+            .updated(changes == null ? new String[0] : changes.updated)
+            .created(changes == null ? new String[0] : changes.created)
+            .destroyed(new String[0])
+            .hasMoreChanges(!update.getNewVersion().equals(getState()))
+            .build()
+        };
+      }
+    }
   }
 
   private MethodResponse[] execute(
