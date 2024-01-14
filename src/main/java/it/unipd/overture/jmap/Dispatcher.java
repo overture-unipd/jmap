@@ -19,12 +19,14 @@ public class Dispatcher {
   private GsonBuilder gsonBuilder;
   private Gson gson;
   private Database db;
+  Jmap jmap;
 
   Dispatcher(Database db) {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
     gson = gsonBuilder.create();
     this.db = db;
+    jmap = null;
   }
 
   Dispatcher() {
@@ -104,7 +106,7 @@ public class Dispatcher {
   }
 
   public String jmap(String address, String body) {
-    return new Jmap(db, gson, db.getAccountId(address)).dispatch(body);
+    return jmap.dispatch(body);
   }
 
   public String reset() {
@@ -114,7 +116,8 @@ public class Dispatcher {
     }
     var domain = System.getenv("DOMAIN");
     db.reset(accounts, domain);
-    new Jmap(db, gson, db.getAccountId(accounts.get(0)[0]+"@"+domain)).reset(); // reset per primo account
+    jmap = new Jmap(db, gson, db.getAccountId(accounts.get(0)[0]+"@"+domain));
+    jmap.reset(); // reset per primo account
     return "Reset Done";
   }
 }

@@ -22,7 +22,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import rs.ltt.jmap.common.*;
 import rs.ltt.jmap.common.entity.*;
@@ -57,7 +56,7 @@ public class Jmap {
   private Gson gson;
   private String accountid;
   private EmailAddress account;
-  private final LinkedHashMap<String, Update> updates = new LinkedHashMap<>();
+  private final Map<String, Update> updates = new LinkedHashMap<>();
 
   Jmap(Database db, Gson gson, String accountid) {
     this.db = db;
@@ -70,8 +69,10 @@ public class Jmap {
   }
 
   public String dispatch(String request) {
+    // System.out.println(">>>>>\n"+ request + "\n\n");
     var jmapRequest = gson.fromJson(request, Request.class);
     final GenericResponse response = dispatch(jmapRequest);
+    // System.out.println("<<<<<\n"+ gson.toJson(response) + "\n\n");
     if (response instanceof ErrorResponse) {
       return gson.toJson(response); // should give an error 400 along with the response
     }
@@ -106,11 +107,11 @@ public class Jmap {
     }
     return map;
   }
-  private String insertEmail(String id, Email email) { // TODO: id is not really used
-    return db.insertInTable("email", gson.toJson(email));
+  private void insertEmail(String id, Email email) { // TODO: id is not really used
+    db.insertInTable("email", gson.toJson(email));
   }
-  private String updateEmail(String id, Email email) {
-    return db.replaceInTable("email", id, gson.toJson(email));
+  private void updateEmail(String id, Email email) {
+    db.replaceInTable("email", id, gson.toJson(email));
   }
 
   private Map<String, MailboxInfo> getMailboxes() {
@@ -122,26 +123,23 @@ public class Jmap {
     }
     return map;
   }
-  private String insertMailbox(String id, MailboxInfo mailbox) {
-    return db.insertInTable("mailbox", gson.toJson(mailbox));
+  private void insertMailbox(String id, MailboxInfo mailbox) {
+    db.insertInTable("mailbox", gson.toJson(mailbox));
   }
 
   private Map<String, Update> getUpdates() {
-    /*
-    var json = db.getTable("update");
-    var map = new LinkedHashMap<String, Update>();
-    for (var el : json) {
-      var m = gson.fromJson(el, Update.class);
-      map.put(String.valueOf(Integer.parseInt(m.getNewVersion())-1), m);
-    }
-    return map;
-    */
     return updates;
+    // var json = db.getTable("update");
+    // var map = new LinkedHashMap<String, Update>();
+    // for (var el : json) {
+    //   var m = gson.fromJson(el, Update.class);
+    //   map.put(String.valueOf(Integer.parseInt(m.getNewVersion())-1), m);
+    // }
+    // return map;
   }
-  private String insertUpdate(String id, Update update) {
-    // return db.insertInTable("update", gson.toJson(update));
+  private void insertUpdate(String id, Update update) {
     updates.put(id, update);
-    return "";
+    // db.insertInTable("update", gson.toJson(update));
   }
 
   private Update getAccumulatedUpdateSince(final String oldVersion) {
@@ -188,20 +186,6 @@ public class Jmap {
 
   private void incrementState() {
     db.incrementAccountState(accountid);
-  }
-
-  private Stream<Email> getAccountEmails(String test) {
-    // var emails = db.getAccountEmails(accountid);
-    var emails = "";
-    Type listType = new TypeToken<List<Email>>() {}.getType();
-    List<Email> list = gson.fromJson(emails, listType);
-    return list.stream();
-  }
-
-  private Email getEmail(String id) {
-    //  var email = db.getEmail(id);
-    var email = "";
-    return  gson.fromJson(email, Email.class);
   }
 
   private MethodResponse[] dispatch(
@@ -415,7 +399,7 @@ public class Jmap {
     final Map<String, Email> create = methodCall.getCreate();
     final String[] destroy = methodCall.getDestroy();
     if (destroy != null && destroy.length > 0) {
-      throw new IllegalStateException("MockMailServer does not know how to destroy");
+      throw new IllegalStateException("Destroy still have to be implemented"); // TODO
     }
     final SetEmailMethodResponse.SetEmailMethodResponseBuilder responseBuilder =
         SetEmailMethodResponse.builder();
@@ -455,21 +439,35 @@ public class Jmap {
       final String id,
       final Map<String, Object> patches,
       ListMultimap<String, Response.Invocation> previousResponses) {
+    final Email email = getEmails().get(id);
+    Map<String, Boolean> old_keywords = email.getKeywords();
+    if (old_keywords == null) {
+      old_keywords = new HashMap<String, Boolean>();
+    }
+    final Map<String, Boolean> new_keywords = new HashMap<String, Boolean>();
     final Email.EmailBuilder emailBuilder = getEmails().get(id).toBuilder();
+    emailBuilder.clearKeywords();
     for (final Map.Entry<String, Object> patch : patches.entrySet()) {
       final String fullPath = patch.getKey();
       final Object modification = patch.getValue();
       final List<String> pathParts = Splitter.on('/').splitToList(fullPath);
       final String parameter = pathParts.get(0);
       if (parameter.equals("keywords")) {
-        if (pathParts.size() == 2 && modification instanceof Boolean) {
+        if (pathParts.size() == 2) {
           final String keyword = pathParts.get(1);
-          final Boolean value = (Boolean) modification;
-          emailBuilder.keyword(keyword, value);
+          final Boolean value = modification instanceof Boolean ? (Boolean) modification : false;
+          new_keywords.put(keyword, value);
         } else {
           throw new IllegalArgumentException(
               "Keyword modification was not split into two parts");
         }
+        old_keywords.putAll(new_keywords);
+        old_keywords.keySet().removeAll(
+          old_keywords.entrySet().stream()
+           .filter(a->a.getValue().equals(false))
+           .map(e -> e.getKey()).collect(Collectors.toList()));
+        old_keywords.forEach((k, v) -> emailBuilder.keyword(k, v));
+        emailBuilder.keyword("placeholder", true);
       } else if (parameter.equals("mailboxIds")) {
         if (pathParts.size() == 2 && modification instanceof Boolean) {
           final String mailboxId = pathParts.get(1);
@@ -536,7 +534,6 @@ public class Jmap {
         }
       }
       final Email email = emailBuilder.build();
-  
       createEmail(email);
       responseBuilder.created(createId, email);
     }
@@ -647,7 +644,7 @@ public class Jmap {
       .unreadEmails(
         emails.values().stream()
           .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
-          // .filter(e -> !e.getKeywords().containsKey(Keyword.SEEN))
+          .filter(e -> (e.getKeywords() == null || !e.getKeywords().containsKey(Keyword.SEEN)))
           .count())
       .totalThreads(
         emails.values().stream()
@@ -658,7 +655,7 @@ public class Jmap {
       .unreadThreads(
         emails.values().stream()
           .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
-          // .filter(e -> !e.getKeywords().containsKey(Keyword.SEEN))
+          .filter(e -> (e.getKeywords() == null || !e.getKeywords().containsKey(Keyword.SEEN)))
           .map(Email::getThreadId)
           .distinct()
           .count())
