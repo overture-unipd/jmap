@@ -4,12 +4,13 @@ Repository contenente il codice del gruppo Overture.
 
 ## Tecnologie usate
 - [Just](https://github.com/casey/just): per l'esecuzione dei comandi frequenti;
-- RethinkDB: come database;
-- Gradle: sistema di build;
-- Docker: come sistema di containerizzazione;
-- EditorConfig: impostazioni di formattazione comuni;
-- pre-commit: hook per git, controlla e sistema la formattazione del codice;
-- Caddy: reverse proxy, per avere il servizio in HTTPS.
+- [RethinkDB](https://rethinkdb.com/): come database;
+- [Gradle](https://gradle.org/): sistema di build;
+- [Docker](https://www.docker.com/): come sistema di containerizzazione;
+- [EditorConfig](https://editorconfig.org/): impostazioni di formattazione comuni;
+- [pre-commit](https://pre-commit.com/): hook per git, controlla e sistema la formattazione del codice;
+- [caddy](https://caddyserver.com/): reverse proxy, per avere il servizio in HTTPS;
+- [rlwrap](https://github.com/hanslub42/rlwrap): integra readline in Jshell.
 
 ## Esecuzione del server
 ```

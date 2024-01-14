@@ -16,15 +16,17 @@ import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
 import rs.ltt.jmap.gson.JmapAdapters;
 
 public class Dispatcher {
-  GsonBuilder gsonBuilder;
-  Gson gson;
-  Database db;
+  private GsonBuilder gsonBuilder;
+  private Gson gson;
+  private Database db;
+  Jmap jmap;
 
   Dispatcher(Database db) {
     gsonBuilder = new GsonBuilder();
     JmapAdapters.register(gsonBuilder);
     gson = gsonBuilder.create();
     this.db = db;
+    jmap = null;
   }
 
   Dispatcher() {
@@ -50,7 +52,7 @@ public class Dispatcher {
   }
 
   public String upload(String type, long size, byte[] blob) {
-    var blobid = db.insertFile(blob);
+    var blobid = db.insertAttachment(blob);
     final Upload upload =
       Upload.builder()
         .size(size)
@@ -62,7 +64,7 @@ public class Dispatcher {
   }
 
   public byte[] download(String blobid) {
-    return db.getFile(blobid);
+    return db.getAttachment(blobid);
   }
 
   public String session(String address) {
@@ -103,8 +105,8 @@ public class Dispatcher {
     return gson.toJson(sessionResource);
   }
 
-  public String jmap(String username, String body) {
-    return new Jmap(db, gson, username, body).dispatch();
+  public String jmap(String address, String body) {
+    return jmap.dispatch(body);
   }
 
   public String reset() {
@@ -113,7 +115,9 @@ public class Dispatcher {
       accounts.add(acc.split(":"));
     }
     var domain = System.getenv("DOMAIN");
-    db.reset(domain, accounts);
+    db.reset(accounts, domain);
+    jmap = new Jmap(db, gson, db.getAccountId(accounts.get(0)[0]+"@"+domain));
+    jmap.reset(); // reset per primo account
     return "Reset Done";
   }
 }

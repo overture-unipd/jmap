@@ -14,6 +14,9 @@ import java.io.ByteArrayInputStream;
 
 public class Ignite {
   public static void main(String[] args) {
+    var dispatcher = new Dispatcher();
+    // dispatcher.reset();
+
     port(8000);
 
     get("/", (q, a) -> "Yeah I'm up");
@@ -25,8 +28,10 @@ public class Ignite {
       if (auth == null) {
         halt(401, "Requests have to be authenticated.");
       }
-      var dispatcher = new Dispatcher();
-      var creds = dispatcher.extractAuth(auth);
+      String[] creds = dispatcher.extractAuth(auth);
+      if (creds.length < 2) {
+        halt(401, "Client Error");
+      }
       var address = creds[0];
       var password = creds[1];
       if (! dispatcher.authenticate(address, password)) {
@@ -36,14 +41,12 @@ public class Ignite {
 
     get("/api/jmap", (q, a) -> {
       a.type("application/json");
-      var dispatcher = new Dispatcher();
       var address = dispatcher.extractAuth(q.headers("Authorization"))[0];
       return dispatcher.session(address);
     });
 
     post("/api/jmap", (q, a) -> {
       a.type("application/json");
-      var dispatcher = new Dispatcher();
       var address = dispatcher.extractAuth(q.headers("Authorization"))[0];
       return dispatcher.jmap(address, q.body());
     });
@@ -53,14 +56,12 @@ public class Ignite {
       var type = q.headers("Content-Type");
       var size = q.contentLength();
       var blob = q.bodyAsBytes();
-      var dispatcher = new Dispatcher();
       return dispatcher.upload(type, size, blob);
     });
 
 
     get("/api/download", (q, a) -> {
       // TODO: should really be: "downloadUrl": "https://www.fastmailusercontent.com/jmap/download/{accountId}/{blobId}/{name}?type={type}",
-      var dispatcher = new Dispatcher();
       var blobid = q.queryParams("blobid");
       var blob = dispatcher.download(blobid);
       if (blob == null) {
@@ -79,6 +80,6 @@ public class Ignite {
       return null;
     });
 
-    get("/reset", (q, a) -> new Dispatcher().reset());
+    get("/reset", (q, a) -> dispatcher.reset());
   }
 }
