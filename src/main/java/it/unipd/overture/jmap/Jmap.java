@@ -1,6 +1,5 @@
 package it.unipd.overture.jmap;
 
-import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,21 +22,50 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
 
-import rs.ltt.jmap.common.*;
-import rs.ltt.jmap.common.entity.*;
+import rs.ltt.jmap.common.ErrorResponse;
+import rs.ltt.jmap.common.GenericResponse;
+import rs.ltt.jmap.common.Request;
+import rs.ltt.jmap.common.Response;
+import rs.ltt.jmap.common.entity.Attachment;
+import rs.ltt.jmap.common.entity.Email;
+import rs.ltt.jmap.common.entity.EmailAddress;
+import rs.ltt.jmap.common.entity.EmailBodyPart;
+import rs.ltt.jmap.common.entity.EmailBodyValue;
+import rs.ltt.jmap.common.entity.ErrorType;
+import rs.ltt.jmap.common.entity.Identity;
+import rs.ltt.jmap.common.entity.Keyword;
+import rs.ltt.jmap.common.entity.Mailbox;
+import rs.ltt.jmap.common.entity.MailboxRights;
+import rs.ltt.jmap.common.entity.Role;
+import rs.ltt.jmap.common.entity.SetError;
+import rs.ltt.jmap.common.entity.SetErrorType;
 import rs.ltt.jmap.common.entity.Thread;
 import rs.ltt.jmap.common.entity.filter.EmailFilterCondition;
 import rs.ltt.jmap.common.entity.filter.Filter;
-import rs.ltt.jmap.common.method.*;
-import rs.ltt.jmap.common.method.call.core.*;
-import rs.ltt.jmap.common.method.call.email.*;
-import rs.ltt.jmap.common.method.call.identity.*;
-import rs.ltt.jmap.common.method.call.mailbox.*;
-import rs.ltt.jmap.common.method.call.thread.*;
-import rs.ltt.jmap.common.method.error.*;
-import rs.ltt.jmap.common.method.response.core.*;
-import rs.ltt.jmap.common.method.response.email.*;
-import rs.ltt.jmap.common.method.response.identity.*;
+import rs.ltt.jmap.common.method.MethodCall;
+import rs.ltt.jmap.common.method.MethodResponse;
+import rs.ltt.jmap.common.method.call.core.EchoMethodCall;
+import rs.ltt.jmap.common.method.call.email.ChangesEmailMethodCall;
+import rs.ltt.jmap.common.method.call.email.GetEmailMethodCall;
+import rs.ltt.jmap.common.method.call.email.QueryEmailMethodCall;
+import rs.ltt.jmap.common.method.call.email.SetEmailMethodCall;
+import rs.ltt.jmap.common.method.call.identity.GetIdentityMethodCall;
+import rs.ltt.jmap.common.method.call.mailbox.ChangesMailboxMethodCall;
+import rs.ltt.jmap.common.method.call.mailbox.GetMailboxMethodCall;
+import rs.ltt.jmap.common.method.call.mailbox.SetMailboxMethodCall;
+import rs.ltt.jmap.common.method.call.thread.ChangesThreadMethodCall;
+import rs.ltt.jmap.common.method.call.thread.GetThreadMethodCall;
+import rs.ltt.jmap.common.method.error.AnchorNotFoundMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.CannotCalculateChangesMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.InvalidResultReferenceMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.StateMismatchMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.UnknownMethodMethodErrorResponse;
+import rs.ltt.jmap.common.method.response.core.EchoMethodResponse;
+import rs.ltt.jmap.common.method.response.email.ChangesEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.email.GetEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.email.QueryEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.email.SetEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.identity.GetIdentityMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.ChangesMailboxMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.GetMailboxMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.SetMailboxMethodResponse;
@@ -45,7 +73,6 @@ import rs.ltt.jmap.common.method.response.thread.ChangesThreadMethodResponse;
 import rs.ltt.jmap.common.method.response.thread.GetThreadMethodResponse;
 import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
-import rs.ltt.jmap.mock.server.EmailGenerator;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 import rs.ltt.jmap.mock.server.Update;
 import rs.ltt.jmap.mock.server.util.FuzzyRoleParser;
@@ -69,10 +96,10 @@ public class Jmap {
   }
 
   public String dispatch(String request) {
-    // System.out.println(">>>>>\n"+ request + "\n\n");
+    System.out.println(">>>>>\n"+ request + "\n\n");
     var jmapRequest = gson.fromJson(request, Request.class);
     final GenericResponse response = dispatch(jmapRequest);
-    // System.out.println("<<<<<\n"+ gson.toJson(response) + "\n\n");
+    System.out.println("<<<<<\n"+ gson.toJson(response) + "\n\n");
     if (response instanceof ErrorResponse) {
       return gson.toJson(response); // should give an error 400 along with the response
     }
@@ -155,24 +182,9 @@ public class Jmap {
     return Update.merge(updates);
   }
 
-  public void reset() {
-    setup(4, 4);
-  }
-
-  private void setup(final int numThreads, final int emailCount) {
-    MailboxInfo m = new MailboxInfo(UUID.randomUUID().toString(), "Inbox", Role.INBOX);
+  public void setupInbox() {
+    MailboxInfo m = new MailboxInfo(UUID.randomUUID().toString(), "Inbox", Role.INBOX, true);
     insertMailbox(m.getId(), m);
-    final String mailboxId = MailboxUtil.find(getMailboxes().values(), Role.INBOX).getId();
-    int count = emailCount;
-    for (int thread = 0; thread < numThreads; ++thread) {
-      final int numInThread = (thread % 4) + 1;
-      for (int i = 0; i < numInThread; ++i) {
-        final Email email =
-          EmailGenerator.get(account, mailboxId, count, thread, i, numInThread);
-        insertEmail(email.getId(), email);
-        count++;
-      }
-    }
   }
 
   private void createEmail(final Email email) {
@@ -318,6 +330,8 @@ public class Jmap {
     return new MethodResponse[] {
       GetEmailMethodResponse.builder()
         .list(emailStream.toArray(Email[]::new))
+        .accountId(accountid)
+        .notFound(new String[0])
         .state(getState())
         .build()
     };
@@ -506,6 +520,7 @@ public class Jmap {
         userSuppliedEmail.toBuilder()
           .id(id)
           .threadId(threadId)
+          .blobId(id)
           .receivedAt(Instant.now())
           .bodyStructure(userSuppliedEmail.getTextBody().get(0));
       emailBuilder.clearMailboxIds();
@@ -627,6 +642,8 @@ public class Jmap {
             .filter(m -> ids == null || ids.contains(m.getId()))
             .toArray(Mailbox[]::new))
         .state(getState())
+        .accountId(accountid)
+        .notFound(new String[0])
         .build()
     };
   }
@@ -637,6 +654,9 @@ public class Jmap {
       .id(mailboxInfo.getId())
       .name(mailboxInfo.getName())
       .role(mailboxInfo.getRole())
+      .isSubscribed(mailboxInfo.getIsSubscribed())
+      // .myRights(new MailboxRights())
+      .sortOrder(0L)
       .totalEmails(
         emails.values().stream()
           .filter(e -> e.getMailboxIds().containsKey(mailboxInfo.getId()))
@@ -705,7 +725,7 @@ public class Jmap {
         continue;
       }
       final String id = UUID.randomUUID().toString();
-      final MailboxInfo mailboxInfo = new MailboxInfo(id, name, mailbox.getRole());
+      final MailboxInfo mailboxInfo = new MailboxInfo(id, name, mailbox.getRole(), true);
       insertMailbox(id, mailboxInfo);
       responseBuilder.created(createId, toMailbox(mailboxInfo));
     }
@@ -741,7 +761,7 @@ public class Jmap {
       final String parameter = pathParts.get(0);
       if ("role".equals(parameter)) {
         final Role role = FuzzyRoleParser.parse((String) modification);
-        return new MailboxInfo(currentMailbox.getId(), currentMailbox.getName(), role);
+        return new MailboxInfo(currentMailbox.getId(), currentMailbox.getName(), role, true);
       } else {
         throw new IllegalArgumentException("Unable to patch " + fullPath);
       }

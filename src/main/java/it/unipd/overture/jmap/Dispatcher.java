@@ -12,6 +12,7 @@ import rs.ltt.jmap.common.entity.Account;
 import rs.ltt.jmap.common.entity.Capability;
 import rs.ltt.jmap.common.entity.Upload;
 import rs.ltt.jmap.common.entity.capability.CoreCapability;
+import rs.ltt.jmap.common.entity.capability.MailCapability;
 import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
 import rs.ltt.jmap.gson.JmapAdapters;
 
@@ -71,6 +72,10 @@ public class Dispatcher {
     ImmutableMap.Builder<Class<? extends Capability>, Capability> capabilityBuilder =
         ImmutableMap.builder();
     capabilityBuilder.put(
+      MailCapability.class,
+      MailCapability.builder()
+        .build());
+    capabilityBuilder.put(
         CoreCapability.class,
         CoreCapability.builder()
             .maxSizeUpload(100 * 1024 * 1024L) // 100MB
@@ -82,11 +87,12 @@ public class Dispatcher {
     final String accountid = getAccountId(address);
     final SessionResource sessionResource =
         SessionResource.builder()
-            .apiUrl("/api/jmap")
-            .uploadUrl("/api/upload")
-            .downloadUrl("/api/download" + "?blobid={blobId}")
+            .apiUrl("http://localhost:8000/api/jmap")
+            .uploadUrl("http://localhost:8000/api/upload")
+            .downloadUrl("http://localhost:8000/api/download" + "?blobid={blobId}")
             .state(getAccountState(accountid))
             .username(address)
+            .eventSourceUrl("")
             .account(
                 accountid,
                 Account.builder()
@@ -97,6 +103,8 @@ public class Dispatcher {
                             .maxSizeAttachmentsPerEmail(50 * 1024 * 1024L) // 50MiB
                             .build()))
                   .name(address)
+                  .isPersonal(true)
+                  .isReadOnly(false)
                   .build())
             .capabilities(capabilityBuilder.build())
             .primaryAccounts(ImmutableMap.of(MailAccountCapability.class, accountid))
@@ -117,7 +125,7 @@ public class Dispatcher {
     var domain = System.getenv("DOMAIN");
     db.reset(accounts, domain);
     jmap = new Jmap(db, gson, db.getAccountId(accounts.get(0)[0]+"@"+domain));
-    jmap.reset(); // reset per primo account
+    jmap.setupInbox();
     return "Reset Done";
   }
 }

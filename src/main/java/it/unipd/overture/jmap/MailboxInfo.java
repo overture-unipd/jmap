@@ -11,4 +11,5 @@ public class MailboxInfo implements IdentifiableMailboxWithRole {
   private final String id;
   private final String name;
   private final Role role;
+  private final Boolean isSubscribed;
 }

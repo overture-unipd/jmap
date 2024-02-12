@@ -3,11 +3,14 @@ package it.unipd.overture.jmap;
 import spark.Redirect;
 import spark.utils.IOUtils;
 
-import static spark.Spark.halt;
+import static spark.Spark.after;
+import static spark.Spark.afterAfter;
+import static spark.Spark.before;
 import static spark.Spark.get;
+import static spark.Spark.halt;
+import static spark.Spark.options;
 import static spark.Spark.port;
 import static spark.Spark.post;
-import static spark.Spark.before;
 import static spark.Spark.redirect;
 
 import java.io.ByteArrayInputStream;
@@ -15,15 +18,39 @@ import java.io.ByteArrayInputStream;
 public class Ignite {
   public static void main(String[] args) {
     var dispatcher = new Dispatcher();
-    // dispatcher.reset();
+    dispatcher.reset();
 
     port(8000);
 
     get("/", (q, a) -> "Yeah I'm up");
 
-    redirect.get("/.well-known/jmap", "/api/jmap", Redirect.Status.MOVED_PERMANENTLY);
+    get("/.well-known/jmap", (q, a) -> {
+      a.header("Access-Control-Allow-Methods", "GET, POST");
+      a.header("Access-Control-Allow-Origin", "*");
+      a.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+      a.redirect("/api/jmap");// , Redirect.Status.MOVED_PERMANENTLY);
+      return "";
+    });
+
+    // redirect.get("/.well-known/jmap", "/api/jmap", Redirect.Status.FOUND);
+    // redirect.get("/.well-known/jmap", "/api/jmap", Redirect.Status.MOVED_PERMANENTLY);
+    // redirect.post("/.well-known/jmap", "/api/jmap", Redirect.Status.MOVED_PERMANENTLY);
+    // redirect.options("/.well-known/jmap", "/api/jmap", Redirect.Status.MOVED_PERMANENTLY);
+    // redirect.any("/.well-known/jmap", "/api/jmap", Redirect.Status.MOVED_PERMANENTLY);
+
+    options("*", (q, a) -> {
+      return "";
+    });
+
+    afterAfter((q, a) -> {
+      a.header("Access-Control-Allow-Methods", "GET, POST");
+      a.header("Access-Control-Allow-Origin", "*");
+      a.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+    });
 
     before("/api/*", (q, a) -> {
+      if (q.requestMethod() != "OPTIONS") {
+
       var auth = q.headers("Authorization");
       if (auth == null) {
         halt(401, "Requests have to be authenticated.");
@@ -36,6 +63,7 @@ public class Ignite {
       var password = creds[1];
       if (! dispatcher.authenticate(address, password)) {
         halt(401, "Wrong credentials.");
+      }
       }
     });
 
