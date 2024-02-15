@@ -105,6 +105,12 @@ public class Database {
       return Base64.getDecoder().decode(blob.getBytes());
   }
 
+  public String getAccountEmails(String address) {
+    var t = r.table("email").filter(row -> row.g("from").contains(email -> email.g("email").eq(address))
+      .or(row.g("to").contains(email -> email.g("email").eq(address)))).run(conn);
+    return gson.toJson(t);
+  }
+
   public String insertAttachment(byte[] content) {
     var key = r.table("attachment").insert(
       r.hashMap("content", content)

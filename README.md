@@ -49,7 +49,7 @@ just run
 
 Il server gira sulla porta 8000.
 
-Eventualmente, per loggare il trafficon con wireshark:
+Eventualmente, per loggare il traffico con wireshark:
 ```
 just wireshark
 ```
@@ -65,3 +65,27 @@ Installa `pre-commit` ed imposta l'hook per Git.
 pip install pre-commit
 pre-commit install
 ```
+
+# Altri clients
+
+Sia `meli` che `aerc` richiedono HTTPS. Usare DuckDNS.
+
+## meli
+
+```bash
+git clone https://github.com/meli/meli
+cd meli
+RUST_LOG=all MELI_DEBUG_STDERR=yes cargo run --features=jmap-trace,debug-tracing 2> debug.log # run with debug options
+```
+
+## aerc
+
+```bash
+git clone https://git.sr.ht/~rjarry/aerc/
+cd aerc
+go build
+./aerc
+```
+
+## twake mail
+Non funziona veramente.
