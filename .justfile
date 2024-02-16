@@ -6,7 +6,7 @@ build:
 	docker build -t overture-unipd/caddy:latest -f caddy.dockerfile .
 
 up *CONTAINERS:
-	docker compose up -d {{CONTAINERS}}
+	docker compose up {{CONTAINERS}}
 
 down:
 	docker compose down
