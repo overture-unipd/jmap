@@ -46,6 +46,8 @@ dependencies {
     implementation("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
+    implementation("io.minio:minio:8.5.8")
+
     implementation("com.squareup.okio:okio:3.7.0")
 }
 
@@ -55,7 +57,7 @@ tasks.named<Test>("test") {
 }
 
 application {
-    mainClass.set("it.unipd.overture.jmap.Ignite")
+    mainClass.set("it.unipd.overture.jmap.Init")
 }
 
 docker {
@@ -79,4 +81,4 @@ spotless {
         googleJavaFormat()
     }
 }
- */
+*/
