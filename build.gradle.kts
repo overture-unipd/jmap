@@ -46,6 +46,7 @@ dependencies {
     implementation("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
+    implementation("com.google.inject:guice:7.0.0")
     implementation("io.minio:minio:8.5.8")
 
     implementation("com.squareup.okio:okio:3.7.0")
