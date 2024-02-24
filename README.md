@@ -5,6 +5,7 @@ Repository contenente il codice del gruppo Overture.
 ## Tecnologie usate
 - [Just](https://github.com/casey/just): per l'esecuzione dei comandi frequenti;
 - [RethinkDB](https://rethinkdb.com/): come database;
+- [Minio](https://min.io/): per il salvataggio dei file;
 - [Gradle](https://gradle.org/): sistema di build;
 - [Docker](https://www.docker.com/): come sistema di containerizzazione;
 - [EditorConfig](https://editorconfig.org/): impostazioni di formattazione comuni;
@@ -65,27 +66,3 @@ Installa `pre-commit` ed imposta l'hook per Git.
 pip install pre-commit
 pre-commit install
 ```
-
-# Altri clients
-
-Sia `meli` che `aerc` richiedono HTTPS. Usare DuckDNS.
-
-## meli
-
-```bash
-git clone https://github.com/meli/meli
-cd meli
-RUST_LOG=all MELI_DEBUG_STDERR=yes cargo run --features=jmap-trace,debug-tracing 2> debug.log # run with debug options
-```
-
-## aerc
-
-```bash
-git clone https://git.sr.ht/~rjarry/aerc/
-cd aerc
-go build
-./aerc
-```
-
-## twake mail
-Non funziona veramente.
