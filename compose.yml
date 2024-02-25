@@ -27,6 +27,21 @@ services:
     volumes:
       - rethinkdb:/data
 
+  minio:
+    image: minio/minio:RELEASE.2024-02-24T17-11-14Z
+    restart: unless-stopped
+    ports:
+      - 10000:9000
+      - 10001:9001
+    command: server --console-address ":9001" http://minio/data
+    volumes:
+      - minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   caddy:
     image: overture-unipd/caddy:latest
     restart: unless-stopped
@@ -42,4 +57,5 @@ services:
 
 volumes:
   rethinkdb:
+  minio:
   caddy_data:
