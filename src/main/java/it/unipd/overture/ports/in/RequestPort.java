@@ -1,9 +1,9 @@
 package it.unipd.overture.ports.in;
 
 public interface RequestPort {
-  String wellKnown();
-  String session(String json);
-  String postJmap(String id);
+  Boolean authenticate(String auth);
+  String session(String auth);
+  String jmap(String json);
+  String upload(byte[] data);
   byte[] download(String id);
-  void upload(Byte[] data);
 }
