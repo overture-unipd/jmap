@@ -15,7 +15,16 @@ import rs.ltt.jmap.common.entity.AbstractIdentifiableEntity;
 import rs.ltt.jmap.mock.server.Update;
 
 import rs.ltt.jmap.mock.server.Changes;
+
 public class UpdateDeserializer implements JsonDeserializer<Update> {
+  @Override
+  public Update deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+      throws JsonParseException {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'deserialize'");
+  }
+}
+
   /*
   Gson gson;
 
@@ -34,4 +43,3 @@ public class UpdateDeserializer implements JsonDeserializer<Update> {
     );
   }
   */
-}

@@ -41,6 +41,8 @@ Il client android [Ltt.rs](https://codeberg.org/iNPUTmice/lttrs-android) richied
 
 Utilizziamo [DuckDNS](https://www.duckdns.org/) per avere un dominio gratuito e [Caddy](https://caddyserver.com/) che funge da reverse proxy con HTTPS.
 
+Per dettagli fare riferimento al manuale utente nella [repository della documentazione](https://github.com/overture-unipd/jmap/tree/develop).
+
 ## Setup per sviluppo locale (senza build immagine Docker)
 Dopo aver abilitato le porte del database (togliendo il commento in `compose.yml`):
 ```
