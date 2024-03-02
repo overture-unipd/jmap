@@ -1,28 +1,61 @@
 package it.unipd.overture.business;
 
-public class Email {
-  private Map<String, Email> getEmails() {
-    var json = db.getTable("email");
-    var map = new HashMap<String, Email>();
-    for (var el : json) {
-      var m = gson.fromJson(el, Email.class);
-      map.put(m.getId(), m);
-    }
-    return map;
-  }
-  private void insertEmail(String id, Email email) { // TODO: id is not really used
-    db.insertInTable("email", gson.toJson(email));
-  }
-  private void updateEmail(String id, Email email) {
-    db.replaceInTable("email", id, gson.toJson(email));
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.common.base.Function;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ListMultimap;
+
+import it.unipd.overture.ports.out.EmailPort;
+import rs.ltt.jmap.common.Request;
+import rs.ltt.jmap.common.Response;
+import rs.ltt.jmap.common.entity.Attachment;
+import rs.ltt.jmap.common.entity.Email;
+import rs.ltt.jmap.common.entity.EmailBodyPart;
+import rs.ltt.jmap.common.entity.EmailBodyValue;
+import rs.ltt.jmap.common.entity.SetError;
+import rs.ltt.jmap.common.entity.SetErrorType;
+import rs.ltt.jmap.common.entity.filter.EmailFilterCondition;
+import rs.ltt.jmap.common.entity.filter.Filter;
+import rs.ltt.jmap.common.method.MethodResponse;
+import rs.ltt.jmap.common.method.call.email.ChangesEmailMethodCall;
+import rs.ltt.jmap.common.method.call.email.GetEmailMethodCall;
+import rs.ltt.jmap.common.method.call.email.QueryEmailMethodCall;
+import rs.ltt.jmap.common.method.call.email.SetEmailMethodCall;
+import rs.ltt.jmap.common.method.error.AnchorNotFoundMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.CannotCalculateChangesMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.InvalidResultReferenceMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.StateMismatchMethodErrorResponse;
+import rs.ltt.jmap.common.method.response.email.ChangesEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.email.GetEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.email.QueryEmailMethodResponse;
+import rs.ltt.jmap.common.method.response.email.SetEmailMethodResponse;
+import rs.ltt.jmap.mock.server.Changes;
+import rs.ltt.jmap.mock.server.CreationIdResolver;
+import rs.ltt.jmap.mock.server.ResultReferenceResolver;
+
+public class EmailHandler {
+  EmailPort emailport;
+
+  EmailHandler(EmailPort emailport) {
+    this.emailport = emailport;
   }
 
-  private void createEmail(final Email email) {
-    insertEmail(email.getId(), email);
-    incrementState();
-  }
-
-  public get(GetEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] get(GetEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    return null;
+    /*
     final Request.Invocation.ResultReference idsReference = methodCall.getIdsReference();
     final List<String> ids;
     if (idsReference != null) {
@@ -64,9 +97,12 @@ public class Email {
         .state(getState())
         .build()
     };
+    */
   }
 
-  public query(QueryEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] query(QueryEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    return null;
+    /*
     final Filter<Email> filter = methodCall.getFilter();
     Stream<Email> stream = getEmails().values().stream();
     stream = applyFilter(filter, stream);
@@ -104,6 +140,7 @@ public class Email {
         .position((long) position)
         .build()
     };
+    */
   }
 
   private static Stream<Email> applyFilter(
@@ -132,7 +169,9 @@ public class Email {
     return t -> seen.add(keyExtractor.apply(t));
   }
 
-  public set(SetEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] set(SetEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    return null;
+    /*
     final String ifInState = methodCall.getIfInState();
     final Map<String, Map<String, Object>> update = methodCall.getUpdate();
     final Map<String, Email> create = methodCall.getCreate();
@@ -172,8 +211,10 @@ public class Email {
       processCreateEmail(create, responseBuilder, previousResponses);
     }
     return new MethodResponse[] {responseBuilder.build()};
+    */
   }
 
+  /*
   private Email patchEmail(
       final String id,
       final Map<String, Object> patches,
@@ -230,7 +271,9 @@ public class Email {
     }
     return emailBuilder.build();
   }
+  */
 
+  /*
   private void processCreateEmail(
       Map<String, Email> create,
       SetEmailMethodResponse.SetEmailMethodResponseBuilder responseBuilder,
@@ -277,9 +320,11 @@ public class Email {
       createEmail(email);
       responseBuilder.created(createId, email);
     }
-  }
+  } */
 
-  public changes(ChangesEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] changes(ChangesEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    return null;
+    /*
     final String since = methodCall.getSinceState();
     if (since != null && since.equals(getState())) {
       return new MethodResponse[] {
@@ -309,6 +354,7 @@ public class Email {
         };
       }
     }
+    */
   }
 
   private static EmailBodyPart injectId(final Attachment attachment) {
