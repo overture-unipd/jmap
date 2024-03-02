@@ -1,7 +1,35 @@
 package it.unipd.overture.business;
 
-public class Thread {
-  public changes(ChangesThreadMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+import java.util.Arrays;
+import java.util.List;
+
+import com.google.common.collect.ListMultimap;
+import com.google.gson.Gson;
+
+import rs.ltt.jmap.common.Request;
+import rs.ltt.jmap.common.Response;
+import rs.ltt.jmap.common.method.MethodResponse;
+import rs.ltt.jmap.common.method.call.thread.ChangesThreadMethodCall;
+import rs.ltt.jmap.common.method.call.thread.GetThreadMethodCall;
+import rs.ltt.jmap.common.method.error.InvalidResultReferenceMethodErrorResponse;
+import rs.ltt.jmap.common.method.response.thread.ChangesThreadMethodResponse;
+import rs.ltt.jmap.common.method.response.thread.GetThreadMethodResponse;
+import rs.ltt.jmap.mock.server.Changes;
+import rs.ltt.jmap.mock.server.ResultReferenceResolver;
+import it.unipd.overture.ports.out.ThreadPort;
+
+public class ThreadHandler {
+  Gson gson;
+  ThreadPort threadPort;
+
+  ThreadHandler(Gson gson, ThreadPort threadPort) {
+    this.gson = gson;
+    this.threadPort = threadPort;
+  }
+
+  public MethodResponse[] changes(ChangesThreadMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    return null;
+    /*
     final String since = methodCall.getSinceState();
     if (since != null && since.equals(getState())) {
       return new MethodResponse[] {
@@ -31,9 +59,12 @@ public class Thread {
         };
       }
     }
+    */
   }
 
-  public get(GetThreadMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] get(GetThreadMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    return null;
+    /*
     final Request.Invocation.ResultReference idsReference = methodCall.getIdsReference();
     final List<String> ids;
     if (idsReference != null) {
@@ -71,5 +102,6 @@ public class Thread {
     return new MethodResponse[] {
       GetThreadMethodResponse.builder().list(threads).state(getState()).build()
     };
+    */
   }
 }
