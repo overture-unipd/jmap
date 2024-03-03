@@ -46,10 +46,10 @@ import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 
-public class EmailHandler {
+public class EmailLogic {
   EmailPort emailport;
 
-  EmailHandler(EmailPort emailport) {
+  EmailLogic(EmailPort emailport) {
     this.emailport = emailport;
   }
 

@@ -32,12 +32,12 @@ import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 import rs.ltt.jmap.mock.server.util.FuzzyRoleParser;
 
-public class MailboxHandler {
+public class MailboxLogic {
   Gson gson;
   MailboxPort mailbox;
   
   @Inject
-  MailboxHandler(Gson gson, MailboxPort mailbox) {
+  MailboxLogic(Gson gson, MailboxPort mailbox) {
     this.gson = gson;
     this.mailbox = mailbox;
   }

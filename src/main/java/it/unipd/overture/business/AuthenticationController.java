@@ -4,11 +4,11 @@ import java.util.Base64;
 import com.google.inject.Inject;
 import it.unipd.overture.ports.out.AccountPort;
 
-public class AuthenticationHandler {
+public class AuthenticationController {
   AccountPort account;
 
   @Inject
-  AuthenticationHandler(AccountPort account) {
+  AuthenticationController(AccountPort account) {
     this.account = account;
   }
 

@@ -9,15 +9,15 @@ import static spark.Spark.post;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import it.unipd.overture.ports.in.RequestPort;
+import it.unipd.overture.ports.in.MethodPort;
 import spark.Request;
 import spark.Response;
 import spark.utils.IOUtils;
 
 public class Spark {
-  private final RequestPort request;
+  private final MethodPort request;
 
-  Spark(RequestPort request) {
+  Spark(MethodPort request) {
     this.request = request;
   }
 

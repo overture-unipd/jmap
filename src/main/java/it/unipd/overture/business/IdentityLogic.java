@@ -9,10 +9,10 @@ import rs.ltt.jmap.common.method.MethodResponse;
 import rs.ltt.jmap.common.method.call.identity.GetIdentityMethodCall;
 import rs.ltt.jmap.common.method.response.identity.GetIdentityMethodResponse;
 
-public class IdentityHandler {
+public class IdentityLogic {
   IdentityPort identityPort;
 
-  IdentityHandler(IdentityPort identityPort) {
+  IdentityLogic(IdentityPort identityPort) {
     this.identityPort = identityPort;
   }
 

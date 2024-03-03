@@ -1,6 +1,7 @@
 package it.unipd.overture.business;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 
 import it.unipd.overture.ports.out.AccountPort;
 import rs.ltt.jmap.common.SessionResource;
@@ -10,11 +11,11 @@ import rs.ltt.jmap.common.entity.capability.CoreCapability;
 import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
 import rs.ltt.jmap.common.entity.capability.MailCapability;
 
-public class SessionHandler {
+public class SessionLogic {
   Gson gson;
   AccountPort accountPort;
 
-  SessionHandler(Gson gson, AccountPort accountPort) {
+  SessionLogic(Gson gson, AccountPort accountPort) {
     this.gson = gson;
     this.accountPort = accountPort;
   }

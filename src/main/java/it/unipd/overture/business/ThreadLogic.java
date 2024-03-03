@@ -18,11 +18,11 @@ import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 import it.unipd.overture.ports.out.ThreadPort;
 
-public class ThreadHandler {
+public class ThreadLogic {
   Gson gson;
   ThreadPort threadPort;
 
-  ThreadHandler(Gson gson, ThreadPort threadPort) {
+  ThreadLogic(Gson gson, ThreadPort threadPort) {
     this.gson = gson;
     this.threadPort = threadPort;
   }

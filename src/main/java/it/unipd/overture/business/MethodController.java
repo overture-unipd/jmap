@@ -26,22 +26,22 @@ import rs.ltt.jmap.common.method.call.thread.ChangesThreadMethodCall;
 import rs.ltt.jmap.common.method.call.thread.GetThreadMethodCall;
 import rs.ltt.jmap.common.method.error.UnknownMethodMethodErrorResponse;
 
-public class MethodHandler {
+public class MethodController {
   Gson gson;
-  EchoHandler echo;
-  EmailHandler email;
-  IdentityHandler identity;
-  MailboxHandler mailbox;
-  ThreadHandler thread;
+  EchoLogic echo;
+  EmailLogic email;
+  IdentityLogic identity;
+  MailboxLogic mailbox;
+  ThreadLogic thread;
 
   @Inject
-  MethodHandler(
+  MethodController(
     Gson gson,
-    EchoHandler echo,
-    EmailHandler email,
-    IdentityHandler identity,
-    MailboxHandler mailbox,
-    ThreadHandler thread
+    EchoLogic echo,
+    EmailLogic email,
+    IdentityLogic identity,
+    MailboxLogic mailbox,
+    ThreadLogic thread
   ) {
     this.gson = gson;
     this.echo = echo;

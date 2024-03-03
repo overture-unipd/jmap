@@ -5,12 +5,12 @@ import com.google.inject.Inject;
 import it.unipd.overture.ports.out.AttachmentPort;
 import rs.ltt.jmap.common.entity.Upload;
 
-public class AttachmentHandler {
+public class AttachmentController {
   Gson gson;
   AttachmentPort attachmentPort;
 
   @Inject
-  AttachmentHandler(Gson gson, AttachmentPort attachmentPort) {
+  AttachmentController(Gson gson, AttachmentPort attachmentPort) {
     this.gson = gson;
     this.attachmentPort = attachmentPort;
   }
