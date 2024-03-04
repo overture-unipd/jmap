@@ -1,5 +1,10 @@
 package it.unipd.overture;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
+import it.unipd.overture.adapters.in.Spark;
+
 public class Init {
   // guice init
   public static void main(String[] args) throws Exception {
@@ -16,10 +21,19 @@ public class Init {
       System.getenv("MINIO_ACCESS"),
       System.getenv("MINIO_SECRET")
     );
+
+		Injector injector = Guice.createInjector(new AppInjector());		
+		
+		MyApplication app = injector.getInstance(MyApplication.class);
+		
+		app.sendMessage("Hi Pankaj", "pankaj@abc.com");
+
+    Spark spark = null;//  = new Spark();
+    spark.start();
   }
 }
 
-    /*
+/*
     Injector injector = Guice.createInjector(
         // new DatabaseModule(),
         // new WebserverModule(),
@@ -59,4 +73,4 @@ public interface Service {
   void stop();
 }
 
-    */
+*/

@@ -1,4 +1,4 @@
-package it.unipd.overture.adapters.out;
+package it.unipd.overture;
 
 import com.google.inject.Provides;
 import com.rethinkdb.RethinkDB;

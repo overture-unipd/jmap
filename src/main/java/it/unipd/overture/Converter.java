@@ -1,4 +1,4 @@
-package it.unipd.overture.business;
+package it.unipd.overture;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
