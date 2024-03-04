@@ -433,6 +433,683 @@
 					"body": "{\n    \"methodResponses\": [\n        [\n            \"Identity/get\",\n            {\n                \"list\": [\n                    {\n                        \"name\": \"alice\",\n                        \"email\": \"alice@jmaptest.duckdns.org\",\n                        \"id\": \"a031bccb-ca23-423b-9615-d2c7917d378e\"\n                    }\n                ]\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"0\"\n}"
 				}
 			]
+		},
+		{
+			"name": "Mailbox/set",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "al",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "alice@jmaptest.duckdns.org",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Mailbox/set\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"create\": {\n                    \"test\": {\n                        \"name\": \"test\",\n                        \"role\": \"test\"\n                    }\n                }\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Mailbox/set",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"methodCalls\":[[\"Mailbox/set\",{\"accountId\":\"a031bccb-ca23-423b-9615-d2c7917d378e\",\"create\":{\"test\":{\"name\":\"test\",\"role\":\"test\"}}},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/jmap",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"jmap"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 03 Mar 2024 20:28:34 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Server",
+							"value": "Jetty(9.4.48.v20220622)"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"methodResponses\": [\n        [\n            \"Mailbox/set\",\n            {\n                \"created\": {\n                    \"test\": {\n                        \"name\": \"test\",\n                        \"totalEmails\": 0,\n                        \"unreadEmails\": 0,\n                        \"totalThreads\": 0,\n                        \"unreadThreads\": 0,\n                        \"id\": \"67072fbf-3573-417b-b183-09590c48a905\"\n                    }\n                },\n                \"updated\": {},\n                \"notCreated\": {},\n                \"notUpdated\": {}\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"11\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Email/set",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "al",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "alice@jmaptest.duckdns.org",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Email/set\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"update\": {\n                    \"M1958775338\": {\n                        \"keywords/$seen\": null\n                    }\n                }\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Email/set",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"methodCalls\":[[\"Email/set\",{\"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\"update\": {\"M1906504930\": {\"keywords/$seen\": null}}},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/jmap",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"jmap"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 03 Mar 2024 20:44:13 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Server",
+							"value": "Jetty(9.4.48.v20220622)"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"methodResponses\": [\n        [\n            \"Email/set\",\n            {\n                \"created\": {},\n                \"updated\": {\n                    \"M1906504930\": {\n                        \"threadId\": \"T3\",\n                        \"mailboxIds\": {\n                            \"c345e5ca-58dc-4e4a-843d-2901a5085386\": true\n                        },\n                        \"keywords\": {\n                            \"placeholder\": true\n                        },\n                        \"receivedAt\": \"2020-11-16T18:33:20Z\",\n                        \"from\": [\n                            {\n                                \"name\": \"Sharon Johnson\",\n                                \"email\": \"sharon.johnson@localhost\"\n                            }\n                        ],\n                        \"to\": [\n                            {\n                                \"name\": \"Steven King\",\n                                \"email\": \"steven.king@localhost\"\n                            },\n                            {\n                                \"name\": \"Ruth Wright\",\n                                \"email\": \"ruth.wright@localhost\"\n                            },\n                            {\n                                \"name\": \"Edward Smith\",\n                                \"email\": \"edward.smith@localhost\"\n                            },\n                            {\n                                \"name\": \"alice\",\n                                \"email\": \"alice@jmaptest.duckdns.org\"\n                            }\n                        ],\n                        \"subject\": \"Re: Aliquam luctus a elit\",\n                        \"sentAt\": \"2020-11-16T19:33:20+01:00\",\n                        \"bodyStructure\": {\n                            \"partId\": \"0\",\n                            \"type\": \"text/plain\"\n                        },\n                        \"bodyValues\": {\n                            \"0\": {\n                                \"value\": \"Vestibulum imperdiet tortor est, nec aliquam ligula volutpat at. Cras et malesuada sapien. Suspendisse sit amet luctus risus, in ultrices urna. Curabitur et maximus ante. Integer sit amet nulla turpis. Nulla pharetra felis et sem tempus laoreet. Suspendisse et facilisis quam, sed bibendum enim.\"\n                            }\n                        },\n                        \"textBody\": [\n                            {\n                                \"partId\": \"0\",\n                                \"type\": \"text/plain\"\n                            }\n                        ],\n                        \"preview\": \"Vestibulum imperdiet tortor est, nec aliquam ligula volutpat at. Cras et malesuada sapien. Suspendisse sit amet luctus risus, in ultrices urna. Curabitur et maximus ante. Integer sit amet nulla turpis. Nulla pharetra felis et sem tempus laoreet. Suspendiss\",\n                        \"id\": \"M1906504930\"\n                    }\n                },\n                \"notCreated\": {},\n                \"notUpdated\": {},\n                \"notDestroyed\": {}\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"12\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Email/query",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "al",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "alice@jmaptest.duckdns.org",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Email/query\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"filter\": {\n                    \"inMailbox\": \"44d96efb-8f1f-43b0-9931-92eeee65984d\"\n                },\n                \"sort\": [\n                    {\n                        \"isAscending\": false,\n                        \"property\": \"receivedAt\"\n                    }\n                ],\n                \"collapseThreads\": true,\n                \"position\": 0,\n                \"limit\": 30,\n                \"calculateTotal\": true\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Email/query",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"methodCalls\":[[\"Email/query\",{\"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\"filter\": {\"inMailbox\": \"c345e5ca-58dc-4e4a-843d-2901a5085386\"},\"sort\": [{\"isAscending\": false,\"property\": \"receivedAt\"}],\"collapseThreads\": true,\"position\": 0,\"limit\": 30,\"calculateTotal\": true}, \"0\" ]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/jmap",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"jmap"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 03 Mar 2024 21:08:12 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Server",
+							"value": "Jetty(9.4.48.v20220622)"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"methodResponses\": [\n        [\n            \"Email/query\",\n            {\n                \"queryState\": \"12\",\n                \"canCalculateChanges\": false,\n                \"position\": 0,\n                \"ids\": [\n                    \"M1906504921\",\n                    \"M1906504923\",\n                    \"M1906504926\",\n                    \"M1906504930\"\n                ],\n                \"total\": 4\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"12\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Email/changes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "al",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "alice@jmaptest.duckdns.org",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Email/changes\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"sinceState\": \"0\"\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Email/changes",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"methodCalls\":[[ \"Email/changes\",{\"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\"sinceState\":\"0\"},\"0\" ]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/jmap",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"jmap"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 03 Mar 2024 21:14:23 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Server",
+							"value": "Jetty(9.4.48.v20220622)"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"methodResponses\": [\n        [\n            \"Email/changes\",\n            {\n                \"oldState\": \"0\",\n                \"newState\": \"12\",\n                \"hasMoreChanges\": false,\n                \"created\": [],\n                \"updated\": [\n                    \"M1906504930\"\n                ],\n                \"destroyed\": []\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"12\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Thread/changes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "al",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "alice@jmaptest.duckdns.org",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Thread/changes\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"sinceState\": \"0\"\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Thread/changes",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"methodCalls\":[[\"Thread/changes\",{\"accountId\":\"a031bccb-ca23-423b-9615-d2c7917d378e\",\"sinceState\":\"0\"},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/jmap",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"jmap"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 03 Mar 2024 21:19:07 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Server",
+							"value": "Jetty(9.4.48.v20220622)"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"methodResponses\": [\n        [\n            \"Thread/changes\",\n            {\n                \"oldState\": \"0\",\n                \"newState\": \"12\",\n                \"hasMoreChanges\": false,\n                \"created\": [],\n                \"updated\": [],\n                \"destroyed\": []\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"12\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Mailbox/changes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "al",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "alice@jmaptest.duckdns.org",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Mailbox/changes\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"sinceState\": \"0\"\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Mailbox/changes",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"methodCalls\":[[ \"Mailbox/changes\",{\"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\"sinceState\":\"0\"},\"0\" ]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/jmap",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"jmap"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 03 Mar 2024 21:21:13 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Server",
+							"value": "Jetty(9.4.48.v20220622)"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"methodResponses\": [\n        [\n            \"Mailbox/changes\",\n            {\n                \"oldState\": \"0\",\n                \"newState\": \"12\",\n                \"hasMoreChanges\": false,\n                \"created\": [\n                    \"cfcdf095-6f3c-4eba-a272-6ba7aa27065a\",\n                    \"67072fbf-3573-417b-b183-09590c48a905\",\n                    \"86312046-ccd8-485e-86dc-3a6c2e39ee94\"\n                ],\n                \"updated\": [\n                    \"c345e5ca-58dc-4e4a-843d-2901a5085386\"\n                ],\n                \"destroyed\": []\n            },\n            \"0\"\n        ]\n    ],\n    \"sessionState\": \"12\"\n}"
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "al",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "alice@jmaptest.duckdns.org",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
