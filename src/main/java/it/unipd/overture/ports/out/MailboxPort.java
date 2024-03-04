@@ -1,8 +1,8 @@
 package it.unipd.overture.ports.out;
 
 public interface MailboxPort {
-  String getMailbox(String id);
-  String getAccountMailboxes(String id);
-  String insertMailbox(String mailbox);
-  void deleteMailbox(String id);
+  String get(String id);
+  String getOf(String accountid);
+  String insert(String mailbox);
+  void delete(String id);
 }

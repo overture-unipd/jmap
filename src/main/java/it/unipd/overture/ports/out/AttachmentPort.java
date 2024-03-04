@@ -1,7 +1,7 @@
 package it.unipd.overture.ports.out;
 
 public interface AttachmentPort {
-  byte[] getAttachment(String id);
-  String insertAttachment(byte[] data);
-  boolean deleteAttachment(String id);
+  byte[] get(String id);
+  String insert(byte[] data);
+  boolean delete(String id);
 }
