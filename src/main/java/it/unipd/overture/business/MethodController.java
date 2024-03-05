@@ -18,6 +18,8 @@ import rs.ltt.jmap.common.method.call.email.ChangesEmailMethodCall;
 import rs.ltt.jmap.common.method.call.email.GetEmailMethodCall;
 import rs.ltt.jmap.common.method.call.email.QueryEmailMethodCall;
 import rs.ltt.jmap.common.method.call.email.SetEmailMethodCall;
+import rs.ltt.jmap.common.method.call.submission.SetEmailSubmissionMethodCall;
+import rs.ltt.jmap.common.method.call.submission.GetEmailSubmissionMethodCall;
 import rs.ltt.jmap.common.method.call.identity.GetIdentityMethodCall;
 import rs.ltt.jmap.common.method.call.mailbox.ChangesMailboxMethodCall;
 import rs.ltt.jmap.common.method.call.mailbox.GetMailboxMethodCall;
@@ -30,6 +32,7 @@ public class MethodController {
   Gson gson;
   EchoLogic echo;
   EmailLogic email;
+  EmailSubmissionLogic submission;
   IdentityLogic identity;
   MailboxLogic mailbox;
   ThreadLogic thread;
@@ -39,6 +42,7 @@ public class MethodController {
     Gson gson,
     EchoLogic echo,
     EmailLogic email,
+    EmailSubmissionLogic submission,
     IdentityLogic identity,
     MailboxLogic mailbox,
     ThreadLogic thread
@@ -46,6 +50,7 @@ public class MethodController {
     this.gson = gson;
     this.echo = echo;
     this.email = email;
+    this.submission = submission;
     this.identity = identity;
     this.mailbox = mailbox;
     this.thread = thread;
@@ -95,6 +100,12 @@ public class MethodController {
       }
       case SetEmailMethodCall call -> {
         yield email.set(call, prevResponses);
+      }
+      case SetEmailSubmissionMethodCall call -> {
+        yield submission.set(call, prevResponses);
+      }
+      case GetEmailSubmissionMethodCall call -> {
+        yield submission.get(call, prevResponses);
       }
       case GetMailboxMethodCall call -> {
         yield mailbox.get(call, prevResponses);

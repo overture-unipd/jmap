@@ -1,77 +1,54 @@
 package it.unipd.overture.business;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 
+import it.unipd.overture.ports.out.AccountPort;
 import it.unipd.overture.ports.out.MailboxPort;
 import rs.ltt.jmap.common.Request;
 import rs.ltt.jmap.common.Response;
-import rs.ltt.jmap.common.entity.Role;
-import rs.ltt.jmap.common.entity.SetError;
-import rs.ltt.jmap.common.entity.SetErrorType;
+import rs.ltt.jmap.common.entity.Mailbox;
 import rs.ltt.jmap.common.method.MethodResponse;
 import rs.ltt.jmap.common.method.call.mailbox.ChangesMailboxMethodCall;
 import rs.ltt.jmap.common.method.call.mailbox.GetMailboxMethodCall;
 import rs.ltt.jmap.common.method.call.mailbox.SetMailboxMethodCall;
 import rs.ltt.jmap.common.method.error.CannotCalculateChangesMethodErrorResponse;
 import rs.ltt.jmap.common.method.error.InvalidResultReferenceMethodErrorResponse;
-import rs.ltt.jmap.common.method.error.StateMismatchMethodErrorResponse;
 import rs.ltt.jmap.common.method.response.mailbox.ChangesMailboxMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.GetMailboxMethodResponse;
-import rs.ltt.jmap.common.method.response.mailbox.SetMailboxMethodResponse;
 import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
-import rs.ltt.jmap.mock.server.util.FuzzyRoleParser;
 
 public class MailboxLogic {
   Gson gson;
-  MailboxPort mailbox;
+  MailboxPort mailboxPort;
+  AccountPort accountPort;
   
   @Inject
-  MailboxLogic(Gson gson, MailboxPort mailbox) {
+  MailboxLogic(Gson gson, MailboxPort mailboxPort, AccountPort accountPort) {
     this.gson = gson;
-    this.mailbox = mailbox;
+    this.mailboxPort = mailboxPort;
+    this.accountPort = accountPort;
   }
-
-  /*
-  public void setupInbox() {
-    MailboxInfo m = new MailboxInfo(UUID.randomUUID().toString(), "Inbox", Role.INBOX, true);
-    insertMailbox(m.getId(), m);
-  }
-
-  private Map<String, MailboxInfo> getMailboxes() {
-    var json = db.getTable("mailbox");
-    var map = new HashMap<String, MailboxInfo>();
-    for (var el : json) {
-      var m = gson.fromJson(el, MailboxInfo.class);
-      map.put(m.getId(), m);
-    }
-    return map;
-  }
-
-  private void insertMailbox(String id, MailboxInfo mailbox) {
-    db.insertInTable("mailbox", gson.toJson(mailbox));
-  }
-  */
 
   public MethodResponse[] changes(ChangesMailboxMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
     return null;
     /*
+    var accountid = methodCall.getAccountId();
+    var state = accountPort.getState(accountid);
     final String since = methodCall.getSinceState();
-    if (since != null && since.equals(getState())) {
+    if (since != null && since.equals(state)) {
       return new MethodResponse[] {
         ChangesMailboxMethodResponse.builder()
-          .oldState(getState())
-          .newState(getState())
+          .oldState(state)
+          .newState(state)
           .updated(new String[0])
           .created(new String[0])
           .destroyed(new String[0])
@@ -99,9 +76,23 @@ public class MailboxLogic {
     */
   }
 
-  public MethodResponse[] get(GetMailboxMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
     /*
+  private Update getAccumulatedUpdateSince(final String oldVersion) {
+    final ArrayList<Update> updates = new ArrayList<>();
+    for (Map.Entry<String, Update> updateEntry : this.updates.entrySet()) {
+      if (updateEntry.getKey().equals(oldVersion) || updates.size() > 0) {
+        updates.add(updateEntry.getValue());
+      }
+    }
+    if (updates.isEmpty()) {
+      return null;
+    }
+    return Update.merge(updates);
+  }
+    */
+
+  public MethodResponse[] get(GetMailboxMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+    var accountid = methodCall.getAccountId();
     final Request.Invocation.ResultReference idsReference = methodCall.getIdsReference();
     final List<String> ids;
     if (idsReference != null) {
@@ -116,19 +107,18 @@ public class MailboxLogic {
       final String[] idsParameter = methodCall.getIds();
       ids = idsParameter == null ? null : Arrays.asList(idsParameter);
     }
-    Stream<MailboxHandler> mailboxStream = getMailboxes().values().stream().map(this::toMailbox);
+    Stream<Mailbox> mailboxStream = mailboxPort.getOf(accountid).values().stream().map(this::toMailbox);
     return new MethodResponse[] {
       GetMailboxMethodResponse.builder()
         .list(
           mailboxStream
             .filter(m -> ids == null || ids.contains(m.getId()))
-            .toArray(MailboxHandler[]::new))
-        .state(getState())
+            .toArray(Mailbox[]::new))
+        .state(accountPort.getState(accountid))
         .accountId(accountid)
         .notFound(new String[0])
         .build()
     };
-    */
   }
 
   /*
