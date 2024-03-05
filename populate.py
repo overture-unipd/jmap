@@ -33,3 +33,10 @@ with open('users.csv', mode='r') as f:
 r.table('identity').insert(
     [{'account': userids[i], 'name': users['username'], 'address': users['username']+'@'+domain} for i, u in enumerate(userids)]
   ).run()
+
+# TODO: minio bucket creation
+# client.make_bucket("overture")
+#   public void setupInbox() {
+#     MailboxInfo m = new MailboxInfo(UUID.randomUUID().toString(), "Inbox", Role.INBOX, true);
+#     insertMailbox(m.getId(), m);
+#   }
