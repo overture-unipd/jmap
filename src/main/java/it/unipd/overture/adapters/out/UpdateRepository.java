@@ -6,27 +6,27 @@ import com.rethinkdb.net.Connection;
 
 import it.unipd.overture.ports.out.UpdatePort;
 
-public class UpdateImpl implements UpdatePort {
+public class UpdateRepository implements UpdatePort {
   private Connection conn;
   private final RethinkDB r = RethinkDB.r;
 
   @Inject
-  UpdateImpl(Connection conn) {
+  UpdateRepository(Connection conn) {
     this.conn = conn;
   }
 
   @Override
-  public String insertUpdate(String update) {
+  public String insert(String update) {
     return r.table("update").insert(update).run(conn).toString();
   }
 
   @Override
-  public String getUpdate(String id) {
+  public String get(String id) {
     return r.table("update").get(id).toJson().run(conn).single().toString();
   }
 
   @Override
-  public void deleteUpdate(String id) {
+  public void delete(String id) {
     r.table("update").get(id).delete().run(conn);
   }
 }

@@ -6,17 +6,17 @@ import com.rethinkdb.net.Connection;
 
 import it.unipd.overture.ports.out.ThreadPort;
 
-public class ThreadImpl implements ThreadPort {
+public class ThreadRepository implements ThreadPort {
   private Connection conn;
   private final RethinkDB r = RethinkDB.r;
 
   @Inject
-  ThreadImpl(Connection conn) {
+  ThreadRepository(Connection conn) {
     this.conn = conn;
   }
 
   @Override
-  public String getThread(String id) {
+  public String get(String id) {
     return r.table("email").getAll(id).optArg("index", "threadId").coerceTo("array").toJson().run(conn).single().toString();
   }
 }

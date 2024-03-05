@@ -8,12 +8,12 @@ import com.rethinkdb.net.Connection;
 
 import it.unipd.overture.ports.out.AccountPort;
 
-public class AccountImpl implements AccountPort {
+public class AccountRepository implements AccountPort {
   private final RethinkDB r = RethinkDB.r;
   private Connection conn;
 
   @Inject
-  AccountImpl(Connection conn) {
+  AccountRepository(Connection conn) {
     this.conn = conn;
   }
 

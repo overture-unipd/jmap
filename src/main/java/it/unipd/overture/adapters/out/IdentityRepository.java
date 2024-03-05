@@ -6,22 +6,22 @@ import com.rethinkdb.net.Connection;
 
 import it.unipd.overture.ports.out.IdentityPort;
 
-public class IdentityImpl implements IdentityPort {
+public class IdentityRepository implements IdentityPort {
   private final RethinkDB r = RethinkDB.r;
   private Connection conn;
 
   @Inject
-  IdentityImpl(Connection conn) {
+  IdentityRepository(Connection conn) {
     this.conn = conn;
   }
 
   @Override
-  public String getIdentities(String accountid) {
+  public String getAll(String accountid) {
     return r.table("identity").getAll(accountid).optArg("index", "account").coerceTo("array").toJson().run(conn).single().toString();
   }
 
   @Override
-  public String getFirstIdentity(String accountid) {
+  public String getFirst(String accountid) {
     return r.table("identity").getAll(accountid).optArg("index", "account").nth(0).toJson().run(conn).single().toString();
   }
 }

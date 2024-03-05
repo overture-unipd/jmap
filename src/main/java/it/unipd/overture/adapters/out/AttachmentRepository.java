@@ -2,29 +2,29 @@ package it.unipd.overture.adapters.out;
 
 import java.io.ByteArrayInputStream;
 
+import com.google.inject.Inject;
+
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import it.unipd.overture.adapters.out.MinioConnection.BucketName;
 import it.unipd.overture.ports.out.AttachmentPort;
 import java.util.UUID;
 
-public class AttachmentImpl implements AttachmentPort {
+public class AttachmentRepository implements AttachmentPort {
   private MinioClient conn;
-  private BucketName buck;
 
-  AttachmentImpl(MinioClient conn, BucketName buck) {
+  @Inject
+  AttachmentRepository(MinioClient conn) {
     this.conn = conn;
-    this.buck = buck;
   }
 
   @Override
-  public byte[] getAttachment(String id) {
+  public byte[] get(String id) {
     try {
       return conn.getObject(
         GetObjectArgs.builder()
-          .bucket(buck.getName())
+          .bucket("jmap")
           .object(id)
           .build()).readAllBytes();
     } catch (Exception e) {
@@ -33,11 +33,11 @@ public class AttachmentImpl implements AttachmentPort {
   }
 
   @Override
-  public boolean deleteAttachment(String id) {
+  public boolean delete(String id) {
     try {
       conn.removeObject(
         RemoveObjectArgs.builder()
-          .bucket(buck.getName())
+          .bucket("jmap")
           .object(id)
           .build());
       return true;
@@ -47,12 +47,12 @@ public class AttachmentImpl implements AttachmentPort {
   }
 
   @Override
-  public String insertAttachment(byte[] data) {
+  public String insert(byte[] data) {
     try {
       var name = UUID.randomUUID().toString();
       conn.putObject(
         PutObjectArgs.builder()
-          .bucket(buck.getName())
+          .bucket("jmap")
           .object(name)
           .stream(new ByteArrayInputStream(data), 0, -1)
           .build());
