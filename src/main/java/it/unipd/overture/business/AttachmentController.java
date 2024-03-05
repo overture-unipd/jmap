@@ -1,30 +1,25 @@
 package it.unipd.overture.business;
 
-import com.google.gson.Gson;
 import com.google.inject.Inject;
-import it.unipd.overture.ports.out.AttachmentPort;
-import rs.ltt.jmap.common.entity.Upload;
 
-public class AttachmentController {
-  Gson gson;
-  AttachmentPort attachmentPort;
+import it.unipd.overture.ports.in.DownloadPort;
+import it.unipd.overture.ports.in.UploadPort;
+
+public class AttachmentController implements UploadPort, DownloadPort {
+  AttachmentLogic attachmentLogic;
 
   @Inject
-  AttachmentController(Gson gson, AttachmentPort attachmentPort) {
-    this.gson = gson;
-    this.attachmentPort = attachmentPort;
-  }
-  
-  String upload(byte[] data) {
-    var blobid = attachmentPort.insertAttachment(data);
-    final Upload upload =
-      Upload.builder()
-        .blobId(blobid)
-        .build();
-      return gson.toJson(upload);
+  AttachmentController(AttachmentLogic attachmentLogic) {
+    this.attachmentLogic = attachmentLogic;
   }
 
-  byte[] download(String id) {
-    return attachmentPort.getAttachment(id);
+  @Override
+  public byte[] pull(String id) {
+    return attachmentLogic.download(id);
+  }
+
+  @Override
+  public String push(byte[] data) {
+    return attachmentLogic.upload(data);
   }
 }
