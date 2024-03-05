@@ -1,4 +1,4 @@
-package it.unipd.overture.business;
+package it.unipd.overture;
 
 import java.lang.reflect.Type;
 import java.util.Map;
