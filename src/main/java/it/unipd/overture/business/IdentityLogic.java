@@ -5,6 +5,7 @@ import com.google.common.collect.ListMultimap;
 import it.unipd.overture.ports.out.IdentityPort;
 import rs.ltt.jmap.common.Response;
 import rs.ltt.jmap.common.Response.Invocation;
+import rs.ltt.jmap.common.entity.Identity;
 import rs.ltt.jmap.common.method.MethodResponse;
 import rs.ltt.jmap.common.method.call.identity.GetIdentityMethodCall;
 import rs.ltt.jmap.common.method.response.identity.GetIdentityMethodResponse;
@@ -17,20 +18,19 @@ public class IdentityLogic {
   }
 
   public MethodResponse[] get(GetIdentityMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
+    var accountid = methodCall.getAccountId();
     return new MethodResponse[] {
       GetIdentityMethodResponse.builder()
         .list(
-          new IdentityHandler[] {
-          IdentityHandler.builder()
+          new Identity[] {
+          Identity.builder()
             .id(accountid)
-            .email(db.getAccountAddress(accountid))
-            .name(db.getAccountName(accountid))
+            // TODO: get all information for the user identity
+            // .email(identityPort.getFirst(null))
+            // .name(db.getAccountName(accountid))
             .build()
           })
         .build()
     };
-    */
   }
 }
