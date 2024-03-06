@@ -2,6 +2,7 @@ package it.unipd.overture.business;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.inject.Inject;
 
 import it.unipd.overture.ports.out.AccountPort;
 import rs.ltt.jmap.common.SessionResource;
@@ -15,6 +16,7 @@ public class SessionLogic {
   Gson gson;
   AccountPort accountPort;
 
+  @Inject
   SessionLogic(Gson gson, AccountPort accountPort) {
     this.gson = gson;
     this.accountPort = accountPort;
@@ -37,11 +39,12 @@ public class SessionLogic {
           .maxConcurrentUpload(1L)
           .build());
     final String accountid = accountPort.getId(username);
+    String server = "https://overture.duckdns.org";
     final SessionResource sessionResource =
         SessionResource.builder()
-          .apiUrl("http://localhost:8000/api/jmap")
-          .uploadUrl("http://localhost:8000/api/upload")
-          .downloadUrl("http://localhost:8000/api/download" + "?blobid={blobId}")
+          .apiUrl(server + "/api/jmap") // TODO: replace with getenv or something else
+          .uploadUrl(server + "/api/upload")
+          .downloadUrl(server + "/api/download?blobid={blobId}")
           .state(accountPort.getState(username))
           .username(username)
           .eventSourceUrl("")
