@@ -1,0 +1,1 @@
+{"methodCalls":[["Mailbox/set",{"accountId":"replace_here_accountId","destroy":["replace_here_mailbox_test_id"]},"0"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail","urn:ietf:params:jmap:submission"]}

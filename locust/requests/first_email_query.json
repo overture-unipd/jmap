@@ -1,0 +1,1 @@
+{"methodCalls":[["Email/query",{"accountId":"replace_here_accountId","filter":{"header":["Autocrypt-Setup-Message","v1"]},"limit":1,"sort":[{"isAscending":false,"property":"receivedAt"}]},"0"],["Email/get",{"accountId":"replace_here_accountId","#ids":{"resultOf":"0","name":"Email/query","path":"/ids"}},"1"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail"]}

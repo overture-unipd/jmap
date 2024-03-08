@@ -1,0 +1,1 @@
+{"methodCalls":[["Mailbox/set",{"accountId":"replace_here_accountId","create":{"mb-sent":{"name":"Sent","role":"sent"}}},"0"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:mail","urn:ietf:params:jmap:submission"]}
