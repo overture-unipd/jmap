@@ -3,7 +3,7 @@ package it.unipd.overture;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import it.unipd.overture.adapters.in.Spark;
+import it.unipd.overture.adapter.in.Spark;
 
 public class Init {
   // guice init
@@ -22,11 +22,11 @@ public class Init {
       System.getenv("MINIO_SECRET")
     );
 
-		Injector injector = Guice.createInjector(new AppInjector());		
+		// Injector injector = Guice.createInjector(new AppInjector());		
 		
-		MyApplication app = injector.getInstance(MyApplication.class);
+		// MyApplication app = injector.getInstance(MyApplication.class);
 		
-		app.sendMessage("Hi Pankaj", "pankaj@abc.com");
+		// app.sendMessage("Hi Pankaj", "pankaj@abc.com");
 
     Spark spark = null;//  = new Spark();
     spark.start();
