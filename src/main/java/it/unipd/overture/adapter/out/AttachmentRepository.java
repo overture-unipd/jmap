@@ -1,8 +1,10 @@
 package it.unipd.overture.adapter.out;
 
 import java.io.ByteArrayInputStream;
+import java.util.UUID;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
@@ -10,14 +12,14 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import it.unipd.overture.port.out.AttachmentPort;
 
-import java.util.UUID;
-
 public class AttachmentRepository implements AttachmentPort {
   private MinioClient conn;
+  private String bucket;
 
   @Inject
-  AttachmentRepository(MinioClient conn) {
+  AttachmentRepository(MinioClient conn, @Named("MINIO_BUCKET") String bucket) {
     this.conn = conn;
+    this.bucket = bucket;
   }
 
   @Override
@@ -25,7 +27,7 @@ public class AttachmentRepository implements AttachmentPort {
     try {
       return conn.getObject(
         GetObjectArgs.builder()
-          .bucket("jmap")
+          .bucket(bucket)
           .object(id)
           .build()).readAllBytes();
     } catch (Exception e) {
@@ -34,11 +36,11 @@ public class AttachmentRepository implements AttachmentPort {
   }
 
   @Override
-  public boolean delete(String id) {
+  public Boolean delete(String id) {
     try {
       conn.removeObject(
         RemoveObjectArgs.builder()
-          .bucket("jmap")
+          .bucket(bucket)
           .object(id)
           .build());
       return true;
@@ -48,14 +50,15 @@ public class AttachmentRepository implements AttachmentPort {
   }
 
   @Override
-  public String insert(byte[] data) {
+  public String insert(byte[] data, String contentType, Long size) {
     try {
       var name = UUID.randomUUID().toString();
       conn.putObject(
         PutObjectArgs.builder()
-          .bucket("jmap")
+          .bucket(bucket)
           .object(name)
-          .stream(new ByteArrayInputStream(data), 0, -1)
+          .contentType(contentType)
+          .stream(new ByteArrayInputStream(data), size, -1)
           .build());
         return name;
     } catch (Exception e) {

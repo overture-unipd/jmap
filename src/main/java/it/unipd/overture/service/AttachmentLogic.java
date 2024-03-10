@@ -1,28 +1,28 @@
 package it.unipd.overture.service;
 
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 
 import it.unipd.overture.port.out.AttachmentPort;
 import rs.ltt.jmap.common.entity.Upload;
 
 public class AttachmentLogic {
-  Gson gson;
-  AttachmentPort attachmentPort;
+  private AttachmentPort attachmentPort;
 
   @Inject
-  AttachmentLogic(Gson gson, AttachmentPort attachmentPort) {
-    this.gson = gson;
+  AttachmentLogic(AttachmentPort attachmentPort) {
     this.attachmentPort = attachmentPort;
   }
   
-  public String upload(byte[] data) {
-    var blobid = attachmentPort.insert(data);
+  public Upload upload(byte[] data, String contentType, Long size) {
+    final String blobid = attachmentPort.insert(data, contentType, size);
     final Upload upload =
       Upload.builder()
+        .accountId("")
         .blobId(blobid)
+        .type(contentType)
+        .size(size)
         .build();
-      return gson.toJson(upload);
+    return upload;
   }
 
   public byte[] download(String id) {
