@@ -1,10 +1,10 @@
 package it.unipd.overture.adapter.out;
 
-import java.util.Properties;
-
+import java.util.Map;
 import com.google.inject.Inject;
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
+import com.rethinkdb.net.Result;
 
 import it.unipd.overture.port.out.AccountPort;
 
@@ -19,26 +19,16 @@ public class AccountRepository implements AccountPort {
 
   @Override
   public String getId(String username) {
-    Properties t = r.table("account").getAll(username).optArg("index", "username").run(conn, Properties.class).single();
-    return t.getProperty("id");
-    // return t.getProperty(u); // gson.fromJson(gson.toJson(id), Properties.class).getProperty("id");
+    Result<Map> res = r.table("account").getAll(username).optArg("index", "username").run(conn, Map.class);
+    if (!res.hasNext()) return null;
+    return res.first().get("id").toString();
   }
 
   @Override
   public String getPassword(String id) {
-    return r.table("account").get(id).run(conn, Properties.class).single().getProperty("password");
-  }
-
-  @Override
-  public String getState(String id) {
-    Properties t = r.table("account").get(id).run(conn, Properties.class).single();
-    return t.getProperty("state");
-  }
-
-  @Override
-  public void incrementState(String id) {
-    r.table("account").get(id).update(
-      a -> r.hashMap("state", a.g("state").coerceTo("number").add(1))
-    ).run(conn);
+    Result<Map> res = r.table("account").get(id).run(conn, Map.class);
+    Map t = res.next();
+    if (t == null) return null;
+    return t.get("password").toString();
   }
 }
