@@ -28,7 +28,7 @@ public class Spark {
   private final DownloadPort download;
 
   @Inject
-  Spark(
+  public Spark(
       AuthenticationPort authentication,
       SessionPort session,
       MethodPort method,
@@ -43,7 +43,10 @@ public class Spark {
   }
 
   private String authenticate(Request q, Response a) {
-    if (! authentication.authenticate(q.headers("Authorization"))) {
+    final Boolean res = authentication.authenticate(q.headers("Authorization"));
+    if (res == null) {
+      halt(500, "Something went wrong.");
+    } else if (res == false) {
       halt(401, "Wrong credentials.");
     }
     return null;
@@ -54,18 +57,23 @@ public class Spark {
   }
 
   private String wellKnown(Request q, Response a) {
-    a.redirect("/api/jmap");// , Redirect.Status.MOVED_PERMANENTLY);
+    a.redirect("/api/jmap");
     return null;
   }
 
   private String getJmap(Request q, Response a) {
     a.type("application/json");
-    return session.get(q.headers("Authorization"));
+    final String res = session.get(q.headers("Authorization"));
+    if (res == null) {
+      halt(500, "Something went wrong.");
+    }
+    return res;
   }
 
   private String postJmap(Request q, Response a) {
     a.type("application/json");
-    return method.get(q.body());
+    final String res = method.dispatch(q.body());
+    return res;
   }
 
   private String download(Request q, Response a) {
@@ -89,8 +97,14 @@ public class Spark {
 
   private String upload(Request q, Response a) {
     a.type("application/json");
+    var type = q.headers("Content-Type");
+    var size = Long.valueOf(q.contentLength()); 
     var blob = q.bodyAsBytes();
-    return upload.push(blob);
+    final String blobid = upload.push(blob, type, size);
+    if (blobid == null) {
+      halt(500, "Something went wrong with the upload.");
+    }
+    return blobid;
   }
 
   public void start() {
@@ -101,7 +115,7 @@ public class Spark {
     get("/.well-known/jmap", this::wellKnown);
     get("/api/jmap", this::getJmap);
     post("/api/jmap", this::postJmap);
-    get("/api/upload", this::upload);
+    post("/api/upload", this::upload);
     get("/api/download", this::download);
   }
 }

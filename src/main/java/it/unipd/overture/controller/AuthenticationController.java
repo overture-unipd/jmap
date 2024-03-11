@@ -1,7 +1,6 @@
 package it.unipd.overture.controller;
 
 import java.util.Base64;
-
 import com.google.inject.Inject;
 
 import it.unipd.overture.port.in.AuthenticationPort;
@@ -16,7 +15,10 @@ public class AuthenticationController implements AuthenticationPort {
   }
 
   @Override
-  public boolean authenticate(String auth) {
+  public Boolean authenticate(String auth) {
+    if (auth == null || auth == "") {
+      return false;
+    }
     var token = auth.split(" ");
     if (token.length != 2) {
       return false;
