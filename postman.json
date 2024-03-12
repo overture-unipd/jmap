@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "614cae5e-b915-433f-bb9a-3248f916f578",
+		"_postman_id": "c3499008-cd18-49af-a325-d44e1c9697cb",
 		"name": "JMAP",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33336795"
+		"_exporter_id": "33774471"
 	},
 	"item": [
 		{
@@ -13,33 +13,53 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							""
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].name).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].name).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].sortOrder).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].sortOrder).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].totalEmails).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].totalEmails).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].unreadEmails).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].unreadEmails).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].totalThreads).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].totalThreads).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].unreadThreads).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].unreadThreads).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].id).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].id).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].state).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].state).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.sessionState).to.exist;",
+							"    pm.expect(responseBody.sessionState).to.not.be.null;",
+							"});"
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "al",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "alice@jmaptest.duckdns.org",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Mailbox/get\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\"\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:mail\"\n    ]\n}",
+					"raw": "{\"methodCalls\":[[\"Mailbox/get\",{\"accountId\":\"39d8eb42-df6a-4d72-b47f-a1118fd00522\"},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -120,6 +140,29 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].state).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].state).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list).to.be.an('array');",
+							"    pm.expect(responseBody.methodResponses[0][1].list).to.have.lengthOf(1);",
+							"",
+							"    var thread = responseBody.methodResponses[0][1].list[0];",
+							"",
+							"    pm.expect(thread.emailIds).to.be.an('array');",
+							"    pm.expect(thread.emailIds).to.not.be.empty;",
+							"",
+							"    pm.expect(thread.id).to.exist;",
+							"    pm.expect(thread.id).to.not.be.null;",
+							"});",
 							""
 						],
 						"type": "text/javascript"
@@ -127,26 +170,11 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "al",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "alice@jmaptest.duckdns.org",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Thread/get\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"ids\": [\n                    \"T3\"\n                ]\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:mail\"\n    ]\n}",
+					"raw": "{\"methodCalls\":[[\"Thread/get\", {\"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\", \"ids\": [\"T3\"]}, \"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}",
 					"options": {
 						"raw": {
 							"language": "json"
