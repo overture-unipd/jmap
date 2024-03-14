@@ -17,8 +17,13 @@ import java.util.stream.Stream;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ListMultimap;
+import com.google.inject.Inject;
 
+import it.unipd.overture.Update;
 import it.unipd.overture.port.out.EmailPort;
+import it.unipd.overture.port.out.MailboxPort;
+import it.unipd.overture.port.out.StatePort;
+import it.unipd.overture.port.out.UpdatePort;
 import rs.ltt.jmap.common.Request;
 import rs.ltt.jmap.common.Response;
 import rs.ltt.jmap.common.entity.Attachment;
@@ -47,15 +52,21 @@ import rs.ltt.jmap.mock.server.CreationIdResolver;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
 
 public class EmailLogic {
-  EmailPort emailport;
+  private EmailPort emailPort;
+  private MailboxPort mailboxPort;
+  private StatePort statePort;
+  private UpdatePort updatePort;
 
-  EmailLogic(EmailPort emailport) {
-    this.emailport = emailport;
+  @Inject
+  EmailLogic(EmailPort emailPort, MailboxPort mailboxPort, StatePort statePort, UpdatePort updatePort) {
+    this.emailPort = emailPort;
+    this.mailboxPort = mailboxPort;
+    this.statePort = statePort;
+    this.updatePort = updatePort;
   }
 
   public MethodResponse[] get(GetEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
+    var accountid = methodCall.getAccountId();
     final Request.Invocation.ResultReference idsReference = methodCall.getIdsReference();
     final List<String> ids;
     if (idsReference != null) {
@@ -70,7 +81,7 @@ public class EmailLogic {
       ids = Arrays.asList(methodCall.getIds());
     }
     final String[] properties = methodCall.getProperties();
-    Stream<Email> emailStream = ids.stream().map(getEmails()::get);
+    Stream<Email> emailStream = ids.stream().map(emailPort::get);
     if (Arrays.equals(properties, Email.Properties.THREAD_ID)) {
       emailStream =
         emailStream.map(
@@ -94,17 +105,15 @@ public class EmailLogic {
         .list(emailStream.toArray(Email[]::new))
         .accountId(accountid)
         .notFound(new String[0])
-        .state(getState())
+        .state(statePort.get(accountid))
         .build()
     };
-    */
   }
 
   public MethodResponse[] query(QueryEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
+    var accountid = methodCall.getAccountId();
     final Filter<Email> filter = methodCall.getFilter();
-    Stream<Email> stream = getEmails().values().stream();
+    Stream<Email> stream = emailPort.getOf(accountid).values().stream();
     stream = applyFilter(filter, stream);
     stream = stream.sorted(Comparator.comparing(Email::getReceivedAt).reversed());
     if (Boolean.TRUE.equals(methodCall.getCollapseThreads())) {
@@ -134,16 +143,15 @@ public class EmailLogic {
     return new MethodResponse[] {
       QueryEmailMethodResponse.builder()
         .canCalculateChanges(false)
-        .queryState(getState())
+        .queryState(statePort.get(accountid))
         .total(total)
         .ids(page)
         .position((long) position)
         .build()
     };
-    */
   }
 
-  private static Stream<Email> applyFilter(
+  protected static Stream<Email> applyFilter(
       final Filter<Email> filter, Stream<Email> emailStream) {
     if (filter instanceof EmailFilterCondition) {
       final EmailFilterCondition emailFilterCondition = (EmailFilterCondition) filter;
@@ -164,24 +172,23 @@ public class EmailLogic {
     return emailStream;
   }
 
-  private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+  protected static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
     final Set<Object> seen = ConcurrentHashMap.newKeySet();
     return t -> seen.add(keyExtractor.apply(t));
   }
 
   public MethodResponse[] set(SetEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
+    final String accountid = methodCall.getAccountId();
     final String ifInState = methodCall.getIfInState();
     final Map<String, Map<String, Object>> update = methodCall.getUpdate();
     final Map<String, Email> create = methodCall.getCreate();
     final String[] destroy = methodCall.getDestroy();
     if (destroy != null && destroy.length > 0) {
-      throw new IllegalStateException("Destroy still have to be implemented"); // TODO
+      throw new IllegalStateException("Destroy have yet to be implemented");
     }
     final SetEmailMethodResponse.SetEmailMethodResponseBuilder responseBuilder =
         SetEmailMethodResponse.builder();
-    final String oldState = getState();
+    final String oldState = statePort.get(accountid);
     if (ifInState != null) {
       if (!ifInState.equals(oldState)) {
         return new MethodResponse[] {new StateMismatchMethodErrorResponse()};
@@ -201,31 +208,29 @@ public class EmailLogic {
         }
       }
       for (final Email email : modifiedEmails) {
-        updateEmail(email.getId(), email);
+        emailPort.insert(accountid, email);
       }
-      incrementState();
-      final String newState = getState();
-      insertUpdate(oldState, Update.updated(modifiedEmails, getMailboxes().keySet(), newState));
+      statePort.increment(accountid);
+      final String newState = statePort.get(accountid);
+      updatePort.insert(accountid, oldState, Update.updated(modifiedEmails, mailboxPort.getOf(accountid).keySet(), newState));
     }
     if (create != null && create.size() > 0) {
-      processCreateEmail(create, responseBuilder, previousResponses);
+      processCreateEmail(create, responseBuilder, previousResponses, accountid);
     }
     return new MethodResponse[] {responseBuilder.build()};
-    */
   }
 
-  /*
-  private Email patchEmail(
+  protected Email patchEmail(
       final String id,
       final Map<String, Object> patches,
       ListMultimap<String, Response.Invocation> previousResponses) {
-    final Email email = getEmails().get(id);
+    final Email email = emailPort.get(id);
     Map<String, Boolean> old_keywords = email.getKeywords();
     if (old_keywords == null) {
       old_keywords = new HashMap<String, Boolean>();
     }
     final Map<String, Boolean> new_keywords = new HashMap<String, Boolean>();
-    final Email.EmailBuilder emailBuilder = getEmails().get(id).toBuilder();
+    final Email.EmailBuilder emailBuilder = email.toBuilder();
     emailBuilder.clearKeywords();
     for (final Map.Entry<String, Object> patch : patches.entrySet()) {
       final String fullPath = patch.getKey();
@@ -271,13 +276,13 @@ public class EmailLogic {
     }
     return emailBuilder.build();
   }
-  */
 
-  /*
-  private void processCreateEmail(
+  protected void processCreateEmail(
       Map<String, Email> create,
       SetEmailMethodResponse.SetEmailMethodResponseBuilder responseBuilder,
-      ListMultimap<String, Response.Invocation> previousResponses) {
+      ListMultimap<String, Response.Invocation> previousResponses,
+      final String accountid
+      ) {
     for (final Map.Entry<String, Email> entry : create.entrySet()) {
       final String createId = entry.getKey();
       final String id = UUID.randomUUID().toString();
@@ -307,9 +312,6 @@ public class EmailLogic {
               partId == null ? null : userSuppliedEmail.getBodyValues().get(partId);
           if (value != null) {
             final EmailBodyPart emailBodyPart = injectId(attachment);
-           //  db.insertFile(
-           //      emailBodyPart.getBlobId(),
-           //      value.getValue().getBytes(StandardCharsets.UTF_8));
             emailBuilder.attachment(emailBodyPart);
           } else {
             emailBuilder.attachment(attachment);
@@ -317,27 +319,41 @@ public class EmailLogic {
         }
       }
       final Email email = emailBuilder.build();
-      createEmail(email);
+      emailPort.insert(accountid, email);
+      statePort.increment(accountid);
       responseBuilder.created(createId, email);
     }
-  } */
+  }
+
+  protected Update getAccumulatedUpdateSince(final String oldVersion, final String accountid) {
+    final ArrayList<Update> updates = new ArrayList<>();
+    for (Map.Entry<String, Update> updateEntry : updatePort.getOf(accountid).entrySet()) {
+      if (updateEntry.getKey().equals(oldVersion) || updates.size() > 0) {
+        updates.add(updateEntry.getValue());
+      }
+    }
+    if (updates.isEmpty()) {
+      return null;
+    }
+    return Update.merge(updates);
+  }
 
   public MethodResponse[] changes(ChangesEmailMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
+    final String accountid = methodCall.getAccountId();
     final String since = methodCall.getSinceState();
-    if (since != null && since.equals(getState())) {
+    final String state = statePort.get(accountid);
+    if (since != null && since.equals(state)) {
       return new MethodResponse[] {
         ChangesEmailMethodResponse.builder()
-          .oldState(getState())
-          .newState(getState())
+          .oldState(state)
+          .newState(state)
           .updated(new String[0])
           .created(new String[0])
           .destroyed(new String[0])
           .build()
       };
     } else {
-      final Update update = getAccumulatedUpdateSince(since);
+      final Update update = getAccumulatedUpdateSince(since, accountid);
       if (update == null) {
         return new MethodResponse[] {new CannotCalculateChangesMethodErrorResponse()};
       } else {
@@ -349,16 +365,14 @@ public class EmailLogic {
             .updated(changes == null ? new String[0] : changes.updated)
             .created(changes == null ? new String[0] : changes.created)
             .destroyed(new String[0])
-            .hasMoreChanges(!update.getNewVersion().equals(getState()))
+            .hasMoreChanges(!state.equals(update.getNewVersion()))
             .build()
         };
       }
     }
-    */
   }
 
-  private static EmailBodyPart injectId(final Attachment attachment) {
-    // TODO: vedi allegati in processCreateEmail
+  protected static EmailBodyPart injectId(final Attachment attachment) {
     return EmailBodyPart.builder()
         .blobId(UUID.randomUUID().toString())
         .charset(attachment.getCharset())

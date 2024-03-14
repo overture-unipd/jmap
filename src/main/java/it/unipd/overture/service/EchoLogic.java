@@ -8,7 +8,7 @@ import rs.ltt.jmap.common.method.call.core.EchoMethodCall;
 import rs.ltt.jmap.common.method.response.core.EchoMethodResponse;
 
 public class EchoLogic {
-  public MethodResponse[] echo(EchoMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] echo(EchoMethodCall methodCall) {
     return new MethodResponse[] {
       EchoMethodResponse.builder().libraryName(methodCall.getLibraryName()).build()
     };

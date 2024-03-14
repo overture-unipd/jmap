@@ -1,35 +1,26 @@
 package it.unipd.overture.service;
 
-import com.google.common.collect.ListMultimap;
+import com.google.inject.Inject;
 
 import it.unipd.overture.port.out.IdentityPort;
-import rs.ltt.jmap.common.Response;
-import rs.ltt.jmap.common.Response.Invocation;
-import rs.ltt.jmap.common.entity.Identity;
+
 import rs.ltt.jmap.common.method.MethodResponse;
 import rs.ltt.jmap.common.method.call.identity.GetIdentityMethodCall;
 import rs.ltt.jmap.common.method.response.identity.GetIdentityMethodResponse;
 
 public class IdentityLogic {
-  IdentityPort identityPort;
+  private IdentityPort identityPort;
 
+  @Inject
   IdentityLogic(IdentityPort identityPort) {
     this.identityPort = identityPort;
   }
 
-  public MethodResponse[] get(GetIdentityMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
+  public MethodResponse[] get(GetIdentityMethodCall methodCall) {
     var accountid = methodCall.getAccountId();
     return new MethodResponse[] {
       GetIdentityMethodResponse.builder()
-        .list(
-          new Identity[] {
-          Identity.builder()
-            .id(accountid)
-            // TODO: get all information for the user identity
-            // .email(identityPort.getFirst(null))
-            // .name(db.getAccountName(accountid))
-            .build()
-          })
+        .list(identityPort.getOf(accountid))
         .build()
     };
   }

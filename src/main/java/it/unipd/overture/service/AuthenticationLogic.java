@@ -5,14 +5,22 @@ import com.google.inject.Inject;
 import it.unipd.overture.port.out.AccountPort;
 
 public class AuthenticationLogic {
-  AccountPort account;
+  private AccountPort account;
 
   @Inject
   AuthenticationLogic(AccountPort account) {
     this.account = account;
   }
 
-  public boolean authenticate(String username, String password) {
-    return account.getPassword(account.getId(username)).equals(password);
+  public Boolean authenticate(String username, String password) {
+    String accountid = account.getId(username);
+    if (accountid == null) {
+      return false;
+    }
+    String pw = account.getPassword(accountid);
+    if (pw == null) {
+      return false;
+    }
+    return pw.equals(password);
   }
 }
