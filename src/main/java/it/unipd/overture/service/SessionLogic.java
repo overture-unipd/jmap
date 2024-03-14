@@ -1,34 +1,30 @@
 package it.unipd.overture.service;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import it.unipd.overture.port.out.AccountPort;
+import it.unipd.overture.port.out.StatePort;
 import rs.ltt.jmap.common.SessionResource;
 import rs.ltt.jmap.common.entity.Account;
 import rs.ltt.jmap.common.entity.Capability;
 import rs.ltt.jmap.common.entity.capability.CoreCapability;
 import rs.ltt.jmap.common.entity.capability.MailAccountCapability;
-import rs.ltt.jmap.common.entity.capability.MailCapability;
 
 public class SessionLogic {
-  Gson gson;
-  AccountPort accountPort;
+  private AccountPort accountPort;
+  private StatePort statePort;
 
   @Inject
-  SessionLogic(Gson gson, AccountPort accountPort) {
-    this.gson = gson;
+  SessionLogic(AccountPort accountPort, StatePort statePort) {
     this.accountPort = accountPort;
+    this.statePort = statePort;
   }
   
-  public String get(String username) {
+  public SessionResource get(String username) {
     ImmutableMap.Builder<Class<? extends Capability>, Capability> capabilityBuilder =
         ImmutableMap.builder();
-    capabilityBuilder.put(
-      MailCapability.class,
-      MailCapability.builder()
-        .build());
     capabilityBuilder.put(
         CoreCapability.class,
         CoreCapability.builder()
@@ -39,15 +35,13 @@ public class SessionLogic {
           .maxConcurrentUpload(1L)
           .build());
     final String accountid = accountPort.getId(username);
-    String server = "https://overture.duckdns.org";
     final SessionResource sessionResource =
         SessionResource.builder()
-          .apiUrl(server + "/api/jmap") // TODO: replace with getenv or something else
-          .uploadUrl(server + "/api/upload")
-          .downloadUrl(server + "/api/download?blobid={blobId}")
-          .state(accountPort.getState(username))
+          .apiUrl("/api/jmap")
+          .uploadUrl("/api/upload")
+          .downloadUrl("/api/download?blobid={blobId}")
+          .state(statePort.get(accountid))
           .username(username)
-          .eventSourceUrl("")
           .account(
               accountid,
               Account.builder()
@@ -57,14 +51,11 @@ public class SessionLogic {
                       MailAccountCapability.builder()
                           .maxSizeAttachmentsPerEmail(50 * 1024 * 1024L) // 50MiB
                           .build()))
-                // .name(address)
-                .isPersonal(true)
-                .isReadOnly(false)
+                .name(username)
                 .build())
           .capabilities(capabilityBuilder.build())
           .primaryAccounts(ImmutableMap.of(MailAccountCapability.class, accountid))
           .build();
-  
-    return gson.toJson(sessionResource);
+    return sessionResource;
   }
 }

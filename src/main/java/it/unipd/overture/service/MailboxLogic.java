@@ -4,45 +4,58 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ListMultimap;
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 
-import it.unipd.overture.port.out.AccountPort;
+import it.unipd.overture.Update;
+import it.unipd.overture.port.out.EmailPort;
 import it.unipd.overture.port.out.MailboxPort;
+import it.unipd.overture.port.out.StatePort;
+import it.unipd.overture.port.out.UpdatePort;
 import rs.ltt.jmap.common.Request;
 import rs.ltt.jmap.common.Response;
+import rs.ltt.jmap.common.entity.Email;
+import rs.ltt.jmap.common.entity.Keyword;
 import rs.ltt.jmap.common.entity.Mailbox;
+import rs.ltt.jmap.common.entity.Role;
+import rs.ltt.jmap.common.entity.SetError;
+import rs.ltt.jmap.common.entity.SetErrorType;
 import rs.ltt.jmap.common.method.MethodResponse;
 import rs.ltt.jmap.common.method.call.mailbox.ChangesMailboxMethodCall;
 import rs.ltt.jmap.common.method.call.mailbox.GetMailboxMethodCall;
 import rs.ltt.jmap.common.method.call.mailbox.SetMailboxMethodCall;
 import rs.ltt.jmap.common.method.error.CannotCalculateChangesMethodErrorResponse;
 import rs.ltt.jmap.common.method.error.InvalidResultReferenceMethodErrorResponse;
+import rs.ltt.jmap.common.method.error.StateMismatchMethodErrorResponse;
 import rs.ltt.jmap.common.method.response.mailbox.ChangesMailboxMethodResponse;
 import rs.ltt.jmap.common.method.response.mailbox.GetMailboxMethodResponse;
+import rs.ltt.jmap.common.method.response.mailbox.SetMailboxMethodResponse;
 import rs.ltt.jmap.mock.server.Changes;
 import rs.ltt.jmap.mock.server.ResultReferenceResolver;
+import rs.ltt.jmap.mock.server.util.FuzzyRoleParser;
 
 public class MailboxLogic {
-  Gson gson;
-  MailboxPort mailboxPort;
-  AccountPort accountPort;
+  private MailboxPort mailboxPort;
+  private EmailPort emailPort;
+  private StatePort statePort;
+  private UpdatePort updatePort;
   
   @Inject
-  MailboxLogic(Gson gson, MailboxPort mailboxPort, AccountPort accountPort) {
-    this.gson = gson;
+  MailboxLogic(MailboxPort mailboxPort, EmailPort emailPort, StatePort statePort, UpdatePort updatePort) {
     this.mailboxPort = mailboxPort;
-    this.accountPort = accountPort;
+    this.emailPort = emailPort;
+    this.statePort = statePort;
+    this.updatePort = updatePort;
   }
 
   public MethodResponse[] changes(ChangesMailboxMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
     var accountid = methodCall.getAccountId();
-    var state = accountPort.getState(accountid);
+    var state = statePort.get(accountid);
     final String since = methodCall.getSinceState();
     if (since != null && since.equals(state)) {
       return new MethodResponse[] {
@@ -56,30 +69,28 @@ public class MailboxLogic {
           .build()
       };
     } else {
-      final Update update = getAccumulatedUpdateSince(since);
+      final Update update = getAccumulatedUpdateSince(since, accountid);
       if (update == null) {
         return new MethodResponse[] {new CannotCalculateChangesMethodErrorResponse()};
       } else {
-        final Changes changes = update.getChangesFor(MailboxHandler.class);
+        final Changes changes = update.getChangesFor(Mailbox.class);
         return new MethodResponse[] {
           ChangesMailboxMethodResponse.builder()
             .oldState(since)
             .newState(update.getNewVersion())
-            .updated(changes.updated)
-            .created(changes.created)
+            .updated(changes == null ? new String[0] :  changes.updated)
+            .created(changes == null ? new String[0] :  changes.created)
             .destroyed(new String[0])
-            .hasMoreChanges(!update.getNewVersion().equals(getState()))
+            .hasMoreChanges(!state.equals(update.getNewVersion()))
             .build()
         };
       }
     }
-    */
   }
 
-    /*
-  private Update getAccumulatedUpdateSince(final String oldVersion) {
+  protected Update getAccumulatedUpdateSince(final String oldVersion, final String accountid) {
     final ArrayList<Update> updates = new ArrayList<>();
-    for (Map.Entry<String, Update> updateEntry : this.updates.entrySet()) {
+    for (Map.Entry<String, Update> updateEntry : updatePort.getOf(accountid).entrySet()) {
       if (updateEntry.getKey().equals(oldVersion) || updates.size() > 0) {
         updates.add(updateEntry.getValue());
       }
@@ -89,7 +100,6 @@ public class MailboxLogic {
     }
     return Update.merge(updates);
   }
-    */
 
   public MethodResponse[] get(GetMailboxMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
     var accountid = methodCall.getAccountId();
@@ -107,29 +117,25 @@ public class MailboxLogic {
       final String[] idsParameter = methodCall.getIds();
       ids = idsParameter == null ? null : Arrays.asList(idsParameter);
     }
-    // Stream<Mailbox> mailboxStream = mailboxPort.getOf(accountid).values().stream().map(this::toMailbox);
+    Stream<Mailbox> mailboxStream = mailboxPort.getOf(accountid).values().stream().map(m -> toMailbox(m, accountid));
+    Mailbox[] found = mailboxStream.filter(m -> ids == null || ids.contains(m.getId())).toArray(Mailbox[]::new);
+    String[] notFound = ids == null ? new String[0] : ids.stream().filter(i -> !Arrays.asList(found).stream().map(m -> m.getId()).collect(Collectors.toList()).contains(i)).toArray(String[]::new);
     return new MethodResponse[] {
       GetMailboxMethodResponse.builder()
-      //   .list(
-      //     mailboxStream
-      //       .filter(m -> ids == null || ids.contains(m.getId()))
-      //       .toArray(Mailbox[]::new))
-        .state(accountPort.getState(accountid))
+        .list(found)
+        .state(statePort.get(accountid))
         .accountId(accountid)
-        .notFound(new String[0])
+        .notFound(notFound)
         .build()
     };
   }
 
-  /*
-  private MailboxHandler toMailbox(MailboxInfo mailboxInfo) {
-    var emails = getEmails();
-    return MailboxHandler.builder()
+  protected Mailbox toMailbox(MailboxInfo mailboxInfo, String accountid) {
+    var emails = emailPort.getOf(accountid);
+    return Mailbox.builder()
       .id(mailboxInfo.getId())
       .name(mailboxInfo.getName())
       .role(mailboxInfo.getRole())
-      .isSubscribed(mailboxInfo.getIsSubscribed())
-      // .myRights(new MailboxRights())
       .sortOrder(0L)
       .totalEmails(
         emails.values().stream()
@@ -155,44 +161,48 @@ public class MailboxLogic {
           .count())
       .build();
   }
-  */
 
   public MethodResponse[] set(SetMailboxMethodCall methodCall, ListMultimap<String, Response.Invocation> previousResponses) {
-    return null;
-    /*
+    var accountid = methodCall.getAccountId();
     final String ifInState = methodCall.getIfInState();
     final SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder =
         SetMailboxMethodResponse.builder();
-    final Map<String, MailboxHandler> create = methodCall.getCreate();
+    final Map<String, Mailbox> create = methodCall.getCreate();
     final Map<String, Map<String, Object>> update = methodCall.getUpdate();
-    final String oldState = getState();
+    final String[] destroy = methodCall.getDestroy();
+    final String oldState = statePort.get(accountid);
     if (ifInState != null) {
       if (!ifInState.equals(oldState)) {
         return new MethodResponse[] {new StateMismatchMethodErrorResponse()};
       }
     }
+    if (destroy != null && destroy.length > 0) {
+      for (final String m : destroy) {
+        mailboxPort.delete(m);
+      }
+    }
     if (create != null && create.size() > 0) {
-      processCreateMailbox(create, responseBuilder);
+      processCreateMailbox(create, responseBuilder, accountid);
     }
     if (update != null && update.size() > 0) {
-      processUpdateMailbox(update, responseBuilder, previousResponses);
+      processUpdateMailbox(update, responseBuilder, previousResponses, accountid);
     }
-    incrementState();
+    statePort.increment(accountid);
     final SetMailboxMethodResponse setMailboxResponse = responseBuilder.build();
-    insertUpdate(oldState, Update.of(setMailboxResponse, getState()));
+    updatePort.insert(accountid, oldState, Update.of(setMailboxResponse, statePort.get(accountid)));
     return new MethodResponse[] {setMailboxResponse};
-    */
   }
 
-  /*
-  private void processCreateMailbox(
-      final Map<String, MailboxHandler> create,
-      final SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder) {
-    for (Map.Entry<String, MailboxHandler> entry : create.entrySet()) {
+  protected void processCreateMailbox(
+      final Map<String, Mailbox> create,
+      final SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder,
+      final String accountid
+      ) {
+    for (Map.Entry<String, Mailbox> entry : create.entrySet()) {
       final String createId = entry.getKey();
-      final MailboxHandler mailbox = entry.getValue();
+      final Mailbox mailbox = entry.getValue();
       final String name = mailbox.getName();
-      if (getMailboxes().values().stream()
+      if (mailboxPort.getOf(accountid).values().stream()
           .anyMatch(mailboxInfo -> mailboxInfo.getName().equals(name))) {
         responseBuilder.notCreated(
             createId,
@@ -201,24 +211,34 @@ public class MailboxLogic {
                 "A mailbox with the name " + name + " already exists"));
         continue;
       }
+      if (name == null || name.equals("")) {
+        responseBuilder.notCreated(
+            createId,
+            new SetError(
+                SetErrorType.INVALID_PROPERTIES,
+                "A mailbox with the name \"\" or null cannot be created"));
+        continue;
+      }
       final String id = UUID.randomUUID().toString();
-      final MailboxInfo mailboxInfo = new MailboxInfo(id, name, mailbox.getRole(), true);
-      insertMailbox(id, mailboxInfo);
-      responseBuilder.created(createId, toMailbox(mailboxInfo));
+      final MailboxInfo mailboxInfo = new MailboxInfo(id, name, mailbox.getRole());
+      mailboxPort.insert(accountid, mailboxInfo);
+      responseBuilder.created(createId, toMailbox(mailboxInfo, accountid));
     }
   }
 
-  private void processUpdateMailbox(
+  protected void processUpdateMailbox(
       Map<String, Map<String, Object>> update,
       SetMailboxMethodResponse.SetMailboxMethodResponseBuilder responseBuilder,
-      ListMultimap<String, Response.Invocation> previousResponses) {
+      ListMultimap<String, Response.Invocation> previousResponses,
+      String accountid
+      ) {
     for (final Map.Entry<String, Map<String, Object>> entry : update.entrySet()) {
       final String id = entry.getKey();
       try {
         final MailboxInfo modifiedMailbox =
-            patchMailbox(id, entry.getValue(), previousResponses);
-        responseBuilder.updated(id, toMailbox(modifiedMailbox));
-        insertMailbox(modifiedMailbox.getId(), modifiedMailbox);
+            patchMailbox(id, entry.getValue(), previousResponses, accountid);
+        responseBuilder.updated(id, toMailbox(modifiedMailbox, accountid));
+        mailboxPort.insert(accountid, modifiedMailbox);
       } catch (final IllegalArgumentException e) {
         responseBuilder.notUpdated(
             id, new SetError(SetErrorType.INVALID_PROPERTIES, e.getMessage()));
@@ -226,11 +246,13 @@ public class MailboxLogic {
     }
   }
 
-  private MailboxInfo patchMailbox(
+  protected MailboxInfo patchMailbox(
       final String id,
       final Map<String, Object> patches,
-      ListMultimap<String, Response.Invocation> previousResponses) {
-    final MailboxInfo currentMailbox = getMailboxes().get(id);
+      ListMultimap<String, Response.Invocation> previousResponses,
+      String accountid
+      ) {
+    final MailboxInfo currentMailbox = mailboxPort.getOf(accountid).get(id);
     for (final Map.Entry<String, Object> patch : patches.entrySet()) {
       final String fullPath = patch.getKey();
       final Object modification = patch.getValue();
@@ -238,12 +260,11 @@ public class MailboxLogic {
       final String parameter = pathParts.get(0);
       if ("role".equals(parameter)) {
         final Role role = FuzzyRoleParser.parse((String) modification);
-        return new MailboxInfo(currentMailbox.getId(), currentMailbox.getName(), role, true);
+        return new MailboxInfo(currentMailbox.getId(), currentMailbox.getName(), role);
       } else {
         throw new IllegalArgumentException("Unable to patch " + fullPath);
       }
     }
     return currentMailbox;
   }
-  */
 }
