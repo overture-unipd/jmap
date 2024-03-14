@@ -1,7 +1,11 @@
 package it.unipd.overture.port.out;
 
+import java.util.Map;
+
+import it.unipd.overture.Update;
+
 public interface UpdatePort {
-  String get(String id);
-  String insert(String update);
-  void delete(String id);
+  Update get(String accountid, String state);
+  Map<String, Update> getOf(String accountid);
+  void insert(String accountid, String oldstate, Update update);
 }

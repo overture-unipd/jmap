@@ -1,34 +1,43 @@
 package it.unipd.overture.adapter.out;
 
-import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
+
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
-import com.rethinkdb.utils.Types;
+import com.rethinkdb.net.Result;
 
 import it.unipd.overture.port.out.EmailSubmissionPort;
+import rs.ltt.jmap.common.entity.EmailSubmission;
 
 public class EmailSubmissionRepository implements EmailSubmissionPort {
   private final RethinkDB r = RethinkDB.r;
-  private final TypeReference<Map<String, Object>> stringObjectMap = Types.mapOf(String.class, Object.class);
   private Connection conn;
+  private Gson gson;
 
   @Inject
-  EmailSubmissionRepository(Connection conn) {
+  EmailSubmissionRepository(Connection conn, Gson gson) {
     this.conn = conn;
+    this.gson = gson;
   }
 
   @Override
-  public String get(String id) {
-    return r.table("submission").getAll(id).optArg("index", "threadId").coerceTo("array").toJson().run(conn).single().toString();
+  public EmailSubmission get(String id) {
+    Result<Map> res = r.table("emailsubmission")
+                   .get(id)
+                   .run(conn, Map.class);
+    if (! res.hasNext()) return null;
+    Map t = res.first();
+    return gson.fromJson(gson.toJson(t), EmailSubmission.class);
   }
 
   @Override
-  public String insert(String submission) {
-    Map<String, Object> res = r.table("submission").insert(r.json(submission)).run(conn, stringObjectMap).single();
-    return ((List<?>) res.get("generated_keys")).get(0).toString();
+  public void insert(String accountid, String id, EmailSubmission emailSubmission) {
+    r.table("emailsubmission")
+      .insert(r.json("{\"account\":\""+accountid+"\",\"id\":\""+id+"\","+gson.toJson(emailSubmission).substring(1)))
+      .optArg("conflict", "replace")
+      .run(conn);
   }
 }

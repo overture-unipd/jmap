@@ -1,35 +1,61 @@
 package it.unipd.overture.adapter.out;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import com.google.gson.Gson;
 import com.google.inject.Inject;
+
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
-import com.rethinkdb.utils.Types;
+import com.rethinkdb.net.Result;
 
 import it.unipd.overture.port.out.EmailPort;
-
-import java.util.List;
-import java.util.Map;
+import rs.ltt.jmap.common.entity.Email;
 
 public class EmailRepository implements EmailPort {
   private final RethinkDB r = RethinkDB.r;
-  private final TypeReference<Map<String, Object>> stringObjectMap = Types.mapOf(String.class, Object.class);
   private Connection conn;
+  private Gson gson;
 
   @Inject
-  EmailRepository(Connection conn) {
+  EmailRepository(Connection conn, Gson gson) {
     this.conn = conn;
+    this.gson = gson;
   }
 
   @Override
-  public String get(String id) {
-    return r.table("email").get(id).toJson().run(conn).single().toString();
+  public Email get(String id) {
+    Result<Map> res = r.table("email")
+                   .get(id)
+                   .run(conn, Map.class);
+    if (!res.hasNext()) return null;
+    return gson.fromJson(gson.toJson(res.first()), Email.class);
   }
 
   @Override
-  public String insert(String email) {
-    Map<String, Object> res = r.table("email").insert(r.json(email)).run(conn, stringObjectMap).single();
-    return ((List<?>) res.get("generated_keys")).get(0).toString();
+  public Map<String, Email> getOf(String accountid) {
+    Map<String, Email> map = new LinkedHashMap<>();
+    var res = r.table("email")
+              .getAll(accountid)
+              .optArg("index", "account")
+              .without("account")
+              .run(conn);
+    res.forEach(doc -> {
+      var email = gson.fromJson(gson.toJson(doc, Map.class), Email.class);
+      var id = email.getId();
+      map.put(id, email);
+    });
+    return map;
+  }
+
+  @Override
+  public void insert(String accountid, Email email) {
+    r.table("email")
+      .insert(r.json("{\"account\":\""+accountid+"\","+gson.toJson(email).substring(1)))
+      .optArg("conflict", "replace")
+      .run(conn);
   }
 
   @Override

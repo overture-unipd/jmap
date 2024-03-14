@@ -1,40 +1,62 @@
 package it.unipd.overture.adapter.out;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
+
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.rethinkdb.utils.Types;
+import com.rethinkdb.net.Result;
 
 import it.unipd.overture.port.out.MailboxPort;
+import it.unipd.overture.service.MailboxInfo;
 
 public class MailboxRepository implements MailboxPort {
   private final RethinkDB r = RethinkDB.r;
-  private final TypeReference<Map<String, Object>> stringObjectMap = Types.mapOf(String.class, Object.class);
   private Connection conn;
+  private Gson gson;
 
   @Inject
-  MailboxRepository(Connection conn) {
+  MailboxRepository(Connection conn, Gson gson) {
     this.conn = conn;
+    this.gson = gson;
   }
 
   @Override
-  public String get(String id) {
-    return r.table("mailbox").get(id).toJson().run(conn).single().toString();
+  public MailboxInfo get(String id) {
+    Result<Map> res = r.table("mailbox")
+                   .get(id)
+                   .without("account")
+                   .run(conn, Map.class);
+    Map t = res.next();
+    if (t == null) return null;
+    return gson.fromJson(gson.toJson(t), MailboxInfo.class);
   }
 
   @Override
-  public String getOf(String accountid) {
-    return r.table("mailbox").getAll(accountid).optArg("index", "account").coerceTo("array").toJson().run(conn).single().toString();
+  public Map<String, MailboxInfo> getOf(String accountid) {
+    Map<String, MailboxInfo> map = new LinkedHashMap<>();
+    var res = r.table("mailbox")
+              .getAll(accountid)
+              .optArg("index", "account")
+              .without("account")
+              .run(conn);
+    res.forEach(doc -> {
+      var mailbox = gson.fromJson(gson.toJson(doc, Map.class), MailboxInfo.class);
+      var id = mailbox.getId();
+      map.put(id, mailbox);
+    });
+    return map;
   }
 
   @Override
-  public String insert(String mailbox) {
-    Map<String, Object> res = r.table("mailbox").insert(r.json(mailbox)).run(conn, stringObjectMap).single();
-    return ((List<?>) res.get("generated_keys")).get(0).toString();
+  public void insert(String accountid, MailboxInfo mailbox) {
+    r.table("mailbox")
+      .insert(r.json("{\"account\":\""+accountid+"\","+gson.toJson(mailbox).substring(1)))
+      .optArg("conflict", "replace")
+      .run(conn);
   }
 
   @Override

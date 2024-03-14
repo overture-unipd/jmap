@@ -1,8 +1,12 @@
 package it.unipd.overture.port.out;
 
+import java.util.Map;
+
+import it.unipd.overture.service.MailboxInfo;
+
 public interface MailboxPort {
-  String get(String id);
-  String getOf(String accountid);
-  String insert(String mailbox);
+  MailboxInfo get(String id);
+  Map<String, MailboxInfo> getOf(String accountid);
+  void insert(String accountid, MailboxInfo mailbox);
   void delete(String id);
 }
