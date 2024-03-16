@@ -1,5 +1,7 @@
 # JMAP server - Overture
 
+[![Coverage](.github/badges/jacoco.svg)](https://github.com/overture-unipd/jmap/actions/workflows/build.yml)
+
 Repository contenente il codice del gruppo Overture.
 
 ## Tecnologie usate

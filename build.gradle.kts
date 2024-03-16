@@ -87,6 +87,17 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         csv.required.set(true)
     }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                include(
+                    "it/unipd/overture/service/**",
+                    "it/unipd/overture/controller/**",
+                    "it/unipd/overture/adapter/out/**"
+                )
+            }
+        })
+    )
 }
 /*
 jacoco {
