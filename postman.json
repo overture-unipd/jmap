@@ -255,33 +255,70 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							""
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].state).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].state).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list).to.be.an('array');",
+							"    pm.expect(responseBody.methodResponses[0][1].list).to.have.lengthOf(1);",
+							"",
+							"    var email = responseBody.methodResponses[0][1].list[0];",
+							"",
+							"    pm.expect(email.threadId).to.exist;",
+							"    pm.expect(email.threadId).to.not.be.null;",
+							"",
+							"    pm.expect(email.mailboxIds).to.be.an('object');",
+							"    pm.expect(email.mailboxIds).to.not.be.empty;",
+							"",
+							"    pm.expect(email.receivedAt).to.exist;",
+							"    pm.expect(email.receivedAt).to.not.be.null;",
+							"",
+							"    pm.expect(email.from).to.be.an('array');",
+							"    pm.expect(email.from).to.not.be.empty;",
+							"",
+							"    pm.expect(email.to).to.be.an('array');",
+							"    pm.expect(email.to).to.not.be.empty;",
+							"",
+							"    pm.expect(email.subject).to.exist;",
+							"    pm.expect(email.subject).to.not.be.null;",
+							"",
+							"    pm.expect(email.sentAt).to.exist;",
+							"    pm.expect(email.sentAt).to.not.be.null;",
+							"",
+							"    pm.expect(email.bodyStructure).to.be.an('object');",
+							"    pm.expect(email.bodyStructure).to.not.be.null;",
+							"",
+							"    pm.expect(email.bodyValues).to.be.an('object');",
+							"    pm.expect(email.bodyValues).to.not.be.empty;",
+							"",
+							"    pm.expect(email.textBody).to.be.an('array');",
+							"    pm.expect(email.textBody).to.not.be.empty;",
+							"",
+							"    pm.expect(email.preview).to.exist;",
+							"    pm.expect(email.preview).to.not.be.null;",
+							"",
+							"    pm.expect(email.id).to.exist;",
+							"    pm.expect(email.id).to.not.be.null;",
+							"});"
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "al",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "alice@jmaptest.duckdns.org",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Email/get\",\n            {\n                \"ids\": [\n                    \"M1906504930\"\n                ]\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:mail\"\n    ]\n}",
+					"raw": "{\"methodCalls\":[[\"Email/get\", {\"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\", \"ids\": [\"M1906504930\"]}, \"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -362,33 +399,35 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							""
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].name).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].name).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].email).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].email).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].id).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].list[0].id).to.not.be.null;",
+							"});"
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "al",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "alice@jmaptest.duckdns.org",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Identity/get\",\n            {\n                \"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\"\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -469,6 +508,42 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].created).to.be.an('object');",
+							"    pm.expect(responseBody.methodResponses[0][1].created).to.not.be.empty;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].created.test).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].created.test).to.not.be.null;",
+							"    pm.expect(responseBody.methodResponses[0][1].created.test).to.be.an('object');",
+							"",
+							"    var testMailbox = responseBody.methodResponses[0][1].created.test;",
+							"",
+							"    pm.expect(testMailbox.name).to.exist;",
+							"    pm.expect(testMailbox.name).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.totalEmails).to.exist;",
+							"    pm.expect(testMailbox.totalEmails).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.unreadEmails).to.exist;",
+							"    pm.expect(testMailbox.unreadEmails).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.totalThreads).to.exist;",
+							"    pm.expect(testMailbox.totalThreads).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.unreadThreads).to.exist;",
+							"    pm.expect(testMailbox.unreadThreads).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.id).to.exist;",
+							"    pm.expect(testMailbox.id).to.not.be.null;",
+							"});",
 							""
 						],
 						"type": "text/javascript"
@@ -476,26 +551,11 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "al",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "alice@jmaptest.duckdns.org",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Mailbox/set\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"create\": {\n                    \"test\": {\n                        \"name\": \"test\",\n                        \"role\": \"test\"\n                    }\n                }\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"raw": "{\"methodCalls\":[[\"Mailbox/set\",{\"accountId\":\"5297edcc-62ce-4c0e-8e0f-9216e48b4881\",\"create\":{\"test\":{\"name\":\"test\",\"role\":\"test\"}}},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -576,6 +636,63 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].updated).to.be.an('object');",
+							"    pm.expect(responseBody.methodResponses[0][1].updated).to.not.be.empty;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].updated.M1958775338).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].updated.M1958775338).to.not.be.null;",
+							"    pm.expect(responseBody.methodResponses[0][1].updated.M1958775338).to.be.an('object');",
+							"",
+							"    var updatedEmail = responseBody.methodResponses[0][1].updated.M1958775338;",
+							"",
+							"    pm.expect(updatedEmail.threadId).to.exist;",
+							"    pm.expect(updatedEmail.threadId).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.mailboxIds).to.be.an('object');",
+							"    pm.expect(updatedEmail.mailboxIds).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.keywords).to.be.an('object');",
+							"    pm.expect(updatedEmail.keywords).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.receivedAt).to.exist;",
+							"    pm.expect(updatedEmail.receivedAt).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.from).to.be.an('array');",
+							"    pm.expect(updatedEmail.from).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.to).to.be.an('array');",
+							"    pm.expect(updatedEmail.to).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.subject).to.exist;",
+							"    pm.expect(updatedEmail.subject).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.sentAt).to.exist;",
+							"    pm.expect(updatedEmail.sentAt).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.bodyStructure).to.be.an('object');",
+							"    pm.expect(updatedEmail.bodyStructure).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.bodyValues).to.be.an('object');",
+							"    pm.expect(updatedEmail.bodyValues).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.textBody).to.be.an('array');",
+							"    pm.expect(updatedEmail.textBody).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.preview).to.exist;",
+							"    pm.expect(updatedEmail.preview).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.id).to.exist;",
+							"    pm.expect(updatedEmail.id).to.not.be.null;",
+							"});",
 							""
 						],
 						"type": "text/javascript"
@@ -583,26 +700,11 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "al",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "alice@jmaptest.duckdns.org",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"methodCalls\": [\n        [\n            \"Email/set\",\n            {\n                \"accountId\": \"a031bccb-ca23-423b-9615-d2c7917d378e\",\n                \"update\": {\n                    \"M1958775338\": {\n                        \"keywords/$seen\": null\n                    }\n                }\n            },\n            \"0\"\n        ]\n    ],\n    \"using\": [\n        \"urn:ietf:params:jmap:core\",\n        \"urn:ietf:params:jmap:submission\"\n    ]\n}",
+					"raw": "{\"methodCalls\": [[\"Email/set\", {\"accountId\": \"912bd709-df88-4152-97eb-c13031dc5f13\", \"create\": {\"e0\": {\"header:Autocrypt:asText:all\": [\"addr=dorothy.williams@overture.duckdns.org; prefer-encrypt=nopreference; keydata=mDMEZZsj3hYJKwYBBAHaRw8BAQdAaF0VpmKz23TlC25PZp5fhj1bayW1LbzNvjopA3qiYJu0Jzxkb3JvdGh5LndpbGxpYW1zQG92ZXJ0dXJlLmR1Y2tkbnMub3JnPoiVBBMWCgBHBQJlmyPeCRDPzjFmxcYlvBYhBLg6FjZrpDfdjTSLqM/OMWbFxiW8Ap4BApsDBRYCAwEABAsJCAcFFQoJCAsFiQlmAYACmQEAAPxsAQCROFnwK1p9BOqPLPPGVCwy9vGvRkw6S21446BxyElVHgEA0F+Tr79VmonXeRZCY16b6i9+KxvwoFiNElwmpHEtAgu4OARlmyPeEgorBgEEAZdVAQUBAQdAR0tUF47xHRChiqTnEZTUHO4xjCycSFjp90o6H/IxFAkDAQgHiHUEGBYKAB0FAmWbI94CngECmwwFFgIDAQAECwkIBwUVCgkICwAKCRDPzjFmxcYlvDmPAQDOlk7U7XVX6wxYJ9BKpww+xZLHUJ2JzT3gDe8GiCVtnAD/XEO70JowIc1NWJv5q0L7uV8rJGdgY+EDb05hTWXkfgI=\", \"addr=dorothy.williams@overture.duckdns.org; prefer-encrypt=nopreference; keydata=mDMEZZsj3hYJKwYBBAHaRw8BAQdAaF0VpmKz23TlC25PZp5fhj1bayW1LbzNvjopA3qiYJu0Jzxkb3JvdGh5LndpbGxpYW1zQG92ZXJ0dXJlLmR1Y2tkbnMub3JnPoiVBBMWCgBHBQJlmyPeCRDPzjFmxcYlvBYhBLg6FjZrpDfdjTSLqM/OMWbFxiW8Ap4BApsDBRYCAwEABAsJCAcFFQoJCAsFiQlmAYACmQEAAPxsAQCROFnwK1p9BOqPLPPGVCwy9vGvRkw6S21446BxyElVHgEA0F+Tr79VmonXeRZCY16b6i9+KxvwoFiNElwmpHEtAgu4OARlmyPeEgorBgEEAZdVAQUBAQdAR0tUF47xHRChiqTnEZTUHO4xjCycSFjp90o6H/IxFAkDAQgHiHUEGBYKAB0FAmWbI94CngECmwwFFgIDAQAECwkIBwUVCgkICwAKCRDPzjFmxcYlvDmPAQDOlk7U7XVX6wxYJ9BKpww+xZLHUJ2JzT3gDe8GiCVtnAD/XEO70JowIc1NWJv5q0L7uV8rJGdgY+EDb05hTWXkfgI=\"], \"bodyValues\": {\"0\": {\"value\": \"prova 123\"}}, \"from\": [{\"email\": \"dorothy.williams@overture.duckdns.org\", \"name\": \"Dorothy Williams\"}], \"keywords\": {\"$draft\": true, \"$seen\": true}, \"mailboxIds\": {\"#mb-drafts\": true}, \"subject\": \"titolo\", \"textBody\": [{\"partId\": \"0\", \"type\": \"text/plain\"}], \"to\": [{\"email\": \"dorothy.williams@overture.duckdns.org\"}], \"header:User-Agent:asText\": \"Ltt.rs/0.4.2\"}}}, \"0\"]], \"using\": [\"urn:ietf:params:jmap:core\", \"urn:ietf:params:jmap:mail\", \"urn:ietf:params:jmap:submission\"]}",
 					"options": {
 						"raw": {
 							"language": "json"
