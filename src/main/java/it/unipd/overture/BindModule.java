@@ -41,6 +41,27 @@ import rs.ltt.jmap.gson.JmapAdapters;
 public class BindModule extends AbstractModule {
   @Override
   public void configure() {
+    // in
+    bind(AuthenticationPort.class).to(AuthenticationController.class);
+    bind(DownloadPort.class).to(AttachmentController.class);
+    bind(MethodPort.class).to(MethodController.class);
+    bind(SessionPort.class).to(SessionController.class);
+    bind(UploadPort.class).to(AttachmentController.class);
+
+    // out
+		bind(AccountPort.class).to(AccountRepository.class);
+		bind(AttachmentPort.class).to(AttachmentRepository.class);
+		bind(EmailPort.class).to(EmailRepository.class);
+		bind(EmailSubmissionPort.class).to(EmailSubmissionRepository.class);
+    bind(UpdatePort.class).to(UpdateRepository.class);
+    bind(IdentityPort.class).to(IdentityRepository.class);
+    bind(MailboxPort.class).to(MailboxRepository.class);
+    bind(StatePort.class).to(StateRepository.class);
+    bind(ThreadPort.class).to(ThreadRepository.class);
+
+    bind(String.class)
+      .annotatedWith(Names.named("MINIO_BUCKET"))
+      .toInstance(System.getenv("MINIO_BUCKET"));
   }
 
   @Provides
