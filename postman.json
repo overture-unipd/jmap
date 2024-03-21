@@ -1338,17 +1338,523 @@
 			},
 			"response": []
 		},
+		{
+			"name": "Mailbox/set (failed: empty name)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].created).to.be.empty;",
+							"    pm.expect(responseBody.methodResponses[0][1].updated).to.be.empty;",
+							"    pm.expect(responseBody.methodResponses[0][1].notCreated).to.not.be.empty;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].notCreated).to.be.an('object');",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].notCreated.test).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].notCreated.test).to.not.be.null;",
+							"    pm.expect(responseBody.methodResponses[0][1].notCreated.test).to.be.an('object');",
+							"",
+							"    var testMailbox = responseBody.methodResponses[0][1].notCreated.test;",
+							"",
+							"    pm.expect(testMailbox.type).to.exist;",
+							"    pm.expect(testMailbox.type).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.description).to.exist;",
+							"    pm.expect(testMailbox.description).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\":[[\"Mailbox/set\",{\"accountId\":\"5297edcc-62ce-4c0e-8e0f-9216e48b4881\",\"create\":{\"test\":{\"name\":null,\"role\":\"test\"}}},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "notJson",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody).to.exist;",
+							"",
+							"    pm.expect(responseBody.type).to.exist;",
+							"    pm.expect(responseBody.type).to.have.string(\"urn:ietf:params:jmap:error:notJSON\");",
+							"    pm.expect(responseBody.type).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.status).to.exist;",
+							"    pm.expect(responseBody.status).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "methodCalls",
+							"value": "\"Mailbox/set\"",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CapabilityTest",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody).to.exist;",
+							"",
+							"    pm.expect(responseBody.type).to.exist;",
+							"    pm.expect(responseBody.type).to.have.string(\"urn:ietf:params:jmap:error:unknownCapability\");",
+							"    pm.expect(responseBody.type).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.status).to.exist;",
+							"    pm.expect(responseBody.status).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\":[[\"Mailbox/get\",{\"accountId\":\"5297edcc-62ce-4c0e-8e0f-9216e48b4881\"},\"0\"]],\"using\":[\"urn:ietf:params:jmap:corre\",\"urn:ietf:params:jmap:mail\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "notRequest",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody).to.exist;",
+							"",
+							"    pm.expect(responseBody.type).to.exist;",
+							"    pm.expect(responseBody.type).to.have.string(\"urn:ietf:params:jmap:error:notRequest\");",
+							"    pm.expect(responseBody.type).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.status).to.exist;",
+							"    pm.expect(responseBody.status).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\":[[\"Mailbox/met\",{\"accountId\":\"5297edcc-62ce-4c0e-8e0f-9216e48b4881\"},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].created).to.be.an('object');",
+							"    pm.expect(responseBody.methodResponses[0][1].created).to.not.be.empty;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1].created.mbdrafts).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].created.mbdrafts).to.not.be.null;",
+							"    pm.expect(responseBody.methodResponses[0][1].created.mbdrafts).to.be.an('object');",
+							"",
+							"    var testMailbox = responseBody.methodResponses[0][1].created.mbdrafts;",
+							"",
+							"    pm.expect(testMailbox.name).to.exist;",
+							"    pm.expect(testMailbox.name).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.totalEmails).to.exist;",
+							"    pm.expect(testMailbox.totalEmails).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.unreadEmails).to.exist;",
+							"    pm.expect(testMailbox.unreadEmails).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.totalThreads).to.exist;",
+							"    pm.expect(testMailbox.totalThreads).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.unreadThreads).to.exist;",
+							"    pm.expect(testMailbox.unreadThreads).to.not.be.null;",
+							"",
+							"    pm.expect(testMailbox.id).to.exist;",
+							"    pm.expect(testMailbox.id).to.not.be.null;",
+							"",
+							"    pm.expect(responseBody.methodResponses[1][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[1][1].created).to.be.an('object');",
+							"    pm.expect(responseBody.methodResponses[1][1].created).to.not.be.empty;",
+							"    pm.expect(responseBody.methodResponses[1][1].created.e0).to.be.an('object');",
+							"    pm.expect(responseBody.methodResponses[1][1].created.e0).to.not.be.empty;",
+							"",
+							"    var updatedEmail = responseBody.methodResponses[1][1].created.e0;",
+							"",
+							"    pm.expect(updatedEmail.blobId).to.exist;",
+							"    pm.expect(updatedEmail.blobId).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.threadId).to.exist;",
+							"    pm.expect(updatedEmail.threadId).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.mailboxIds).to.be.an('object');",
+							"    pm.expect(updatedEmail.mailboxIds).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.keywords).to.be.an('object');",
+							"    pm.expect(updatedEmail.keywords).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.receivedAt).to.exist;",
+							"    pm.expect(updatedEmail.receivedAt).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.from).to.be.an('array');",
+							"    pm.expect(updatedEmail.from).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.to).to.be.an('array');",
+							"    pm.expect(updatedEmail.to).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.subject).to.exist;",
+							"    pm.expect(updatedEmail.subject).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.subject).to.exist;",
+							"    pm.expect(updatedEmail.subject).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.bodyStructure).to.be.an('object');",
+							"    pm.expect(updatedEmail.bodyStructure).to.not.be.null;",
+							"",
+							"    pm.expect(updatedEmail.bodyValues).to.be.an('object');",
+							"    pm.expect(updatedEmail.bodyValues).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.textBody).to.be.an('array');",
+							"    pm.expect(updatedEmail.textBody).to.not.be.empty;",
+							"",
+							"    pm.expect(updatedEmail.id).to.exist;",
+							"    pm.expect(updatedEmail.id).to.not.be.null; ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\": [[\"Mailbox/set\", {\"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\", \"create\": {\"mbdrafts\": {\"name\": \"Drafts\", \"role\": \"drafts\"}}}, \"0\"], [\"Email/set\", {\"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\", \"create\": {\"e0\": {\"header:Autocrypt:asText:all\": [\"addr=dorothy.williams@overture.duckdns.org; prefer-encrypt=nopreference; keydata=mDMEZZsj3hYJKwYBBAHaRw8BAQdAaF0VpmKz23TlC25PZp5fhj1bayW1LbzNvjopA3qiYJu0Jzxkb3JvdGh5LndpbGxpYW1zQG92ZXJ0dXJlLmR1Y2tkbnMub3JnPoiVBBMWCgBHBQJlmyPeCRDPzjFmxcYlvBYhBLg6FjZrpDfdjTSLqM/OMWbFxiW8Ap4BApsDBRYCAwEABAsJCAcFFQoJCAsFiQlmAYACmQEAAPxsAQCROFnwK1p9BOqPLPPGVCwy9vGvRkw6S21446BxyElVHgEA0F+Tr79VmonXeRZCY16b6i9+KxvwoFiNElwmpHEtAgu4OARlmyPeEgorBgEEAZdVAQUBAQdAR0tUF47xHRChiqTnEZTUHO4xjCycSFjp90o6H/IxFAkDAQgHiHUEGBYKAB0FAmWbI94CngECmwwFFgIDAQAECwkIBwUVCgkICwAKCRDPzjFmxcYlvDmPAQDOlk7U7XVX6wxYJ9BKpww+xZLHUJ2JzT3gDe8GiCVtnAD/XEO70JowIc1NWJv5q0L7uV8rJGdgY+EDb05hTWXkfgI=\", \"addr=dorothy.williams@overture.duckdns.org; prefer-encrypt=nopreference; keydata=mDMEZZsj3hYJKwYBBAHaRw8BAQdAaF0VpmKz23TlC25PZp5fhj1bayW1LbzNvjopA3qiYJu0Jzxkb3JvdGh5LndpbGxpYW1zQG92ZXJ0dXJlLmR1Y2tkbnMub3JnPoiVBBMWCgBHBQJlmyPeCRDPzjFmxcYlvBYhBLg6FjZrpDfdjTSLqM/OMWbFxiW8Ap4BApsDBRYCAwEABAsJCAcFFQoJCAsFiQlmAYACmQEAAPxsAQCROFnwK1p9BOqPLPPGVCwy9vGvRkw6S21446BxyElVHgEA0F+Tr79VmonXeRZCY16b6i9+KxvwoFiNElwmpHEtAgu4OARlmyPeEgorBgEEAZdVAQUBAQdAR0tUF47xHRChiqTnEZTUHO4xjCycSFjp90o6H/IxFAkDAQgHiHUEGBYKAB0FAmWbI94CngECmwwFFgIDAQAECwkIBwUVCgkICwAKCRDPzjFmxcYlvDmPAQDOlk7U7XVX6wxYJ9BKpww+xZLHUJ2JzT3gDe8GiCVtnAD/XEO70JowIc1NWJv5q0L7uV8rJGdgY+EDb05hTWXkfgI=\"], \"bodyValues\": {\"0\": {\"value\": \"prova 123\"}}, \"from\": [{\"email\": \"dorothy.williams@overture.duckdns.org\", \"name\": \"Dorothy Williams\"}], \"keywords\": {\"$draft\": true, \"$seen\": true}, \"mailboxIds\": {\"#mbdrafts\": true}, \"subject\": \"titolo\", \"textBody\": [{\"partId\": \"0\", \"type\": \"text/plain\"}], \"to\": [{\"email\": \"dorothy.williams@overture.duckdns.org\"}], \"header:User-Agent:asText\": \"Ltt.rs/0.4.2\"}}}, \"1\"], [\"Mailbox/set\", {\"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\", \"create\": {\"mbsent\": {\"name\": \"Sent\", \"role\": \"sent\"}}}, \"2\"]], \"using\": [\"urn:ietf:params:jmap:core\", \"urn:ietf:params:jmap:mail\", \"urn:ietf:params:jmap:submission\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cannotCalculateChanges",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.not.be.null;",
+							"    pm.expect(responseBody.methodResponses[0][1].type).to.have.string(\"cannotCalculateChanges\");",
+							"    pm.expect(responseBody.methodResponses[0][1].type).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\":[[ \"Mailbox/changes\",{\"accountId\": \"39d8eb42-df6a-4d72-b47f-a1118fd00522\",\"sinceState\":\"100\"},\"0\" ]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:submission\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "notFound",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La risposta è in formato JSON\", function() {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"La risposta ha la struttura corretta rispetto alla richiesta\", function() {",
+							"    var responseBody = pm.response.json();",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1]).to.not.be.null;",
+							"    pm.expect(responseBody.methodResponses[0][1].notFound).to.exist;",
+							"    pm.expect(responseBody.methodResponses[0][1].notFound).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\":[[\"Mailbox/get\",{\"accountId\":\"39d8eb42-df6a-4d72-b47f-a1118fd00522\", \"ids\": [\"ciao\"]},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Wrong credentials",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "al@jmaptest.duckdns.org",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "a",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"methodCalls\":[[\"Mailbox/get\",{\"accountId\":\"39d8eb42-df6a-4d72-b47f-a1118fd00522\"},\"0\"]],\"using\":[\"urn:ietf:params:jmap:core\",\"urn:ietf:params:jmap:mail\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/jmap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"jmap"
+					]
+				}
+			},
+			"response": []
+		}
+	],
 	"auth": {
 		"type": "basic",
 		"basic": [
 			{
-				"key": "password",
-				"value": "al",
+				"key": "username",
+				"value": "alice@overture.duckdns.org",
 				"type": "string"
 			},
 			{
-				"key": "username",
-				"value": "alice@jmaptest.duckdns.org",
+				"key": "password",
+				"value": "a",
 				"type": "string"
 			}
 		]
