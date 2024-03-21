@@ -1,8 +1,0 @@
-DOMAIN=overture.duckdns.org
-DB_HOST=database
-DB_PORT=28015
-DB_NAME=jmap
-BUCKET=jmap
-HOST=jmap
-PORT=8000
-DUCKDNS=5db3f781-1b7e-4b59-9034-532b927e337d
