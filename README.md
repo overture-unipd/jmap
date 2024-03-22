@@ -18,7 +18,7 @@ Repository contenente il codice del gruppo Overture.
 - [RethinkDB](https://rethinkdb.com/): come database;
 - [Spark](https://sparkjava.com/): framework minimale per esposizione endpoint HTTP;
 - [TestContainers](https://testcontainers.com/): framework per integration testing;
-- [iNPUTmice jmap](https://codeberg.org/iNPUTmice/jmap/): libreria Java contenente gli oggetti di dominio;
+- [iNPUTmice jmap](https://codeberg.org/iNPUTmice/jmap/): libreria Java contenente gli oggetti di dominio.
 
 ## Esecuzione del server
 ```
