@@ -1,0 +1,1 @@
+{"methodCalls":[["Identity/get",{"accountId":"replace_here_accountId"},"0"]],"using":["urn:ietf:params:jmap:core","urn:ietf:params:jmap:submission"]}

@@ -1,17 +1,24 @@
 # JMAP server - Overture
 
+[![Coverage](.github/badges/jacoco.svg)](https://github.com/overture-unipd/jmap/actions/workflows/build.yml)
+
 Repository contenente il codice del gruppo Overture.
 
-## Tecnologie usate
-- [Just](https://github.com/casey/just): per l'esecuzione dei comandi frequenti;
-- [RethinkDB](https://rethinkdb.com/): come database;
-- [Minio](https://min.io/): per il salvataggio dei file;
-- [Gradle](https://gradle.org/): sistema di build;
+## Tecnologie utilizzate
+## Programmi
+- [Caddy](https://caddyserver.com/): reverse proxy, per avere il servizio in HTTPS;
 - [Docker](https://www.docker.com/): come sistema di containerizzazione;
-- [EditorConfig](https://editorconfig.org/): impostazioni di formattazione comuni;
-- [pre-commit](https://pre-commit.com/): hook per git, controlla e sistema la formattazione del codice;
-- [caddy](https://caddyserver.com/): reverse proxy, per avere il servizio in HTTPS;
-- [rlwrap](https://github.com/hanslub42/rlwrap): integra readline in Jshell.
+- [Gradle](https://gradle.org/): sistema di build;
+- [Guice](https://github.com/google/guice): framework di dependency injection;
+- [Junit](https://junit.org/junit5/): framework Java per unit testing;
+- [Locust](https://locust.io/): framework python di load testing;
+- [Minio](https://min.io/): per il salvataggio dei file;
+- [Mockito](https://site.mockito.org/): framework per mock di oggetti Java;
+- [Postman](https://www.postman.com/): programma per il testing delle API;
+- [RethinkDB](https://rethinkdb.com/): come database;
+- [Spark](https://sparkjava.com/): framework minimale per esposizione endpoint HTTP;
+- [TestContainers](https://testcontainers.com/): framework per integration testing;
+- [iNPUTmice jmap](https://codeberg.org/iNPUTmice/jmap/): libreria Java contenente gli oggetti di dominio.
 
 ## Esecuzione del server
 ```

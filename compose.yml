@@ -4,6 +4,7 @@ services:
   jmap:
     image: overture-unipd/jmap:latest
     restart: unless-stopped
+    # TODO comment
     ports:
       - 8000:8000
     env_file:
@@ -20,6 +21,7 @@ services:
   rethinkdb:
     image: rethinkdb:2.4.2-bullseye-slim
     restart: unless-stopped
+    # TODO comment
     ports:
       - 9000:8080
       - 29015:29015
@@ -30,10 +32,13 @@ services:
   minio:
     image: minio/minio:RELEASE.2024-02-24T17-11-14Z
     restart: unless-stopped
+    # TODO comment
     ports:
       - 10000:9000
       - 10001:9001
-    command: server --console-address ":9001" http://minio/data
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env
     volumes:
       - minio:/data
     healthcheck:

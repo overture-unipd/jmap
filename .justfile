@@ -20,7 +20,10 @@ wireshark:
 test:
 	gradle test
 
-run:
+jacoco:
+	gradle jacocoTestReport
+
+run: # TODO: change
 	bash -c "source .env && DB_HOST=localhost && export \$(cut -d= -f1 .env) && gradle run"
 
 reset:
